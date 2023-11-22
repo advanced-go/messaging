@@ -8,7 +8,7 @@ import (
 type pkg struct{}
 
 const (
-	PkgUri     = "github.com/advanced-go/messaging/startup"
+	PkgPath    = "github.com/advanced-go/messaging/startup"
 	StatusPath = "/startup/status"
 )
 

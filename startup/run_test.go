@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/advanced-go/core/runtime"
-	"github.com/advanced-go/core/runtime/runtimetest"
 	"github.com/advanced-go/messaging/content"
 	"github.com/advanced-go/messaging/core"
 	"time"
@@ -58,7 +57,7 @@ func ExampleStartup_Success() {
 	core.Register(uri3, c)
 	go startupDepends(c, nil)
 
-	status := Run[runtimetest.DebugError](time.Second*2, nil)
+	status := Run[runtime.DebugError](time.Second*2, nil)
 
 	fmt.Printf("test: Startup() -> [%v]\n", status)
 
@@ -87,7 +86,7 @@ func ExampleStartup_Failure() {
 	core.Register(uri3, c)
 	go startupDepends(c, errors.New("startup failure error message"))
 
-	status := Run[runtimetest.DebugError](time.Second*2, nil)
+	status := Run[runtime.DebugError](time.Second*2, nil)
 
 	fmt.Printf("test: Startup() -> [%v]\n", status)
 

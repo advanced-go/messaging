@@ -80,9 +80,9 @@ func ExampleEntryDirectory_Send() {
 	directoryTest.Add(uri2, c)
 	directoryTest.Add(uri3, c)
 
-	directoryTest.Send(Message{To: uri1, From: PkgUri, Event: StartupEvent})
-	directoryTest.Send(Message{To: uri2, From: PkgUri, Event: StartupEvent})
-	directoryTest.Send(Message{To: uri3, From: PkgUri, Event: StartupEvent})
+	directoryTest.Send(Message{To: uri1, From: PkgPath, Event: StartupEvent})
+	directoryTest.Send(Message{To: uri2, From: PkgPath, Event: StartupEvent})
+	directoryTest.Send(Message{To: uri3, From: PkgPath, Event: StartupEvent})
 
 	time.Sleep(time.Second * 1)
 	resp1 := <-c

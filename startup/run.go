@@ -10,9 +10,9 @@ import (
 	"time"
 )
 
-type messageMap map[string]core.Message
-
-var runLocation = PkgUri + "/Run"
+const (
+	runLocation = PkgPath + "/Run"
+)
 
 // Run - templated function to start all registered resources.
 func Run[E runtime.ErrorHandler](duration time.Duration, content content.Map) (status runtime.Status) {
@@ -49,8 +49,8 @@ func Run[E runtime.ErrorHandler](duration time.Duration, content content.Map) (s
 	return e.Handle(runtime.NewStatusError(runtime.StatusDeadlineExceeded, runLocation, errors.New(fmt.Sprintf("response counts < directory entries [%v] [%v]", cache.Count(), core.Directory.Count()))), "", "")
 }
 
-func createToSend(cm content.Map, fn core.MessageHandler) messageMap {
-	m := make(messageMap)
+func createToSend(cm content.Map, fn core.MessageHandler) core.MessageMap {
+	m := make(core.MessageMap)
 	for _, k := range core.Directory.Uri() {
 		msg := core.Message{To: k, From: core.HostName, Event: core.StartupEvent, Status: nil, ReplyTo: fn}
 		if cm != nil {
@@ -63,7 +63,7 @@ func createToSend(cm content.Map, fn core.MessageHandler) messageMap {
 	return m
 }
 
-func sendMessages(msgs messageMap) {
+func sendMessages(msgs core.MessageMap) {
 	for k := range msgs {
 		core.Directory.Send(msgs[k])
 	}

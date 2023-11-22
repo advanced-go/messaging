@@ -12,6 +12,9 @@ const (
 	HostName      = "startup"
 )
 
+// MessageMap - map of messages
+type MessageMap map[string]Message
+
 // MessageHandler - function type to process a Message
 type MessageHandler func(msg Message)
 
