@@ -1,4 +1,4 @@
-package startup
+package exchange
 
 import (
 	"errors"
@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+var pingDir = any(NewDirectory()).(*directory)
+
 func ExamplePing() {
 	uri1 := "urn:ping:good"
 	uri2 := "urn:ping:bad"
@@ -15,36 +17,35 @@ func ExamplePing() {
 	uri4 := "urn:ping:delay"
 
 	start = time.Now()
-	core.Directory.Empty()
+	empty(pingDir)
 
 	c := make(chan core.Message, 16)
-	core.Register(uri1, c)
+	pingDir.Add(uri1, c)
 	go pingGood(c)
-	status := Ping[runtime.DebugError](nil, uri1)
+	status := ping[runtime.DebugError](pingDir, nil, uri1)
 	duration := status.Duration()
 	fmt.Printf("test: Ping(good) -> [%v] [duration:%v]\n", status, duration)
 
 	c = make(chan core.Message, 16)
-	core.Register(uri2, c)
+	pingDir.Add(uri2, c)
 	go pingBad(c)
-	status = Ping[runtime.DebugError](nil, uri2)
+	status = ping[runtime.DebugError](pingDir, nil, uri2)
 	fmt.Printf("test: Ping(bad) -> [%v] [duration:%v]\n", status, duration)
 
 	c = make(chan core.Message, 16)
-	core.Register(uri3, c)
+	pingDir.Add(uri3, c)
 	go pingError(c, errors.New("ping depends error message"))
-	status = Ping[runtime.DebugError](nil, uri3)
+	status = ping[runtime.DebugError](pingDir, nil, uri3)
 	fmt.Printf("test: Ping(error) -> [%v] [duration:%v]\n", status, duration)
 
 	c = make(chan core.Message, 16)
-	core.Register(uri4, c)
+	pingDir.Add(uri4, c)
 	go pingDelay(c)
-	status = Ping[runtime.DebugError](nil, uri4)
+	status = ping[runtime.DebugError](pingDir, nil, uri4)
 	fmt.Printf("test: Ping(delay) -> [%v] [duration:%v]\n", status, duration)
 
 	//Output:
 	//test: Ping(good) -> [OK] [duration:0s]
-	//{ "id":null, "l":"github.com/advanced-go/core/runtime/startup/Ping", "o":null "err" : [ "ping response time out: [urn:ping:bad]" ] }
 	//test: Ping(bad) -> [Deadline Exceeded [ping response time out: [urn:ping:bad]]] [duration:0s]
 	//test: Ping(error) -> [Internal Error [ping depends error message]] [duration:0s]
 	//test: Ping(delay) -> [OK] [duration:0s]

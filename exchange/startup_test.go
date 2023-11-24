@@ -1,35 +1,41 @@
-package startup
+package exchange
 
 import (
 	"errors"
 	"fmt"
 	"github.com/advanced-go/core/runtime"
-	"github.com/advanced-go/messaging/content"
 	"github.com/advanced-go/messaging/core"
 	"time"
 )
 
-var credFn content.Credentials = func() (string, string, error) {
+var credFn core.Credentials = func() (string, string, error) {
 	return "", "", nil
 }
 
+func testRegister(uri string, c chan core.Message) error {
+	startupDir.Add(uri, c)
+	return nil
+}
+
 var start time.Time
+
+var startupDir = any(NewDirectory()).(*directory)
 
 func ExampleCreateToSend() {
 	none := "/startup/none"
 	one := "/startup/one"
 
-	core.RegisterUnchecked(none, nil)
-	core.RegisterUnchecked(one, nil)
+	testRegister(none, nil)
+	testRegister(one, nil)
 
-	m := createToSend(nil, nil)
+	m := createToSend(startupDir, nil, nil)
 	msg := m[none]
 	fmt.Printf("test: createToSend(nil,nil) -> [to:%v] [from:%v]\n", msg.To, msg.From)
 
-	cm := content.Map{one: []any{credFn}}
-	m = createToSend(cm, nil)
+	cm := core.Map{one: []any{credFn}}
+	m = createToSend(startupDir, cm, nil)
 	msg = m[one]
-	fmt.Printf("test: createToSend(map,nil) -> [to:%v] [from:%v] [credentials:%v]\n", msg.To, msg.From, content.AccessCredentials(&msg) != nil)
+	fmt.Printf("test: createToSend(map,nil) -> [to:%v] [from:%v] [credentials:%v]\n", msg.To, msg.From, core.AccessCredentials(&msg) != nil)
 
 	//Output:
 	//test: createToSend(nil,nil) -> [to:/startup/none] [from:startup]
@@ -43,25 +49,28 @@ func ExampleStartup_Success() {
 	uri3 := "urn:startup:depends"
 
 	start = time.Now()
-	core.Directory.Empty()
+	empty(startupDir)
 
 	c := make(chan core.Message, 16)
-	core.Register(uri1, c)
+	testRegister(uri1, c)
 	go startupGood(c)
 
 	c = make(chan core.Message, 16)
-	core.Register(uri2, c)
+	testRegister(uri2, c)
 	go startupBad(c)
 
 	c = make(chan core.Message, 16)
-	core.Register(uri3, c)
+	testRegister(uri3, c)
 	go startupDepends(c, nil)
 
-	status := Run[runtime.DebugError](time.Second*2, nil)
+	status := startup[runtime.DebugError](startupDir, time.Second*2, nil)
 
 	fmt.Printf("test: Startup() -> [%v]\n", status)
 
 	//Output:
+	//startup successful for startup [urn:startup:bad] : 0s
+	//startup successful for startup [urn:startup:depends] : 0s
+	//startup successful for startup [urn:startup:good] : 0s
 	//test: Startup() -> [OK]
 
 }
@@ -72,26 +81,25 @@ func ExampleStartup_Failure() {
 	uri3 := "urn:startup:depends"
 
 	start = time.Now()
-	core.Directory.Empty()
+	empty(startupDir)
 
 	c := make(chan core.Message, 16)
-	core.Register(uri1, c)
+	testRegister(uri1, c)
 	go startupGood(c)
 
 	c = make(chan core.Message, 16)
-	core.Register(uri2, c)
+	testRegister(uri2, c)
 	go startupBad(c)
 
 	c = make(chan core.Message, 16)
-	core.Register(uri3, c)
+	testRegister(uri3, c)
 	go startupDepends(c, errors.New("startup failure error message"))
 
-	status := Run[runtime.DebugError](time.Second*2, nil)
+	status := startup[runtime.DebugError](startupDir, time.Second*2, nil)
 
 	fmt.Printf("test: Startup() -> [%v]\n", status)
 
 	//Output:
-	//{ "id":null, "l":"github.com/advanced-go/core/runtime/startup/Run", "o":null "err" : [ "startup failure error message" ] }
 	//test: Startup() -> [Internal Error]
 
 }
@@ -132,7 +140,7 @@ func startupDepends(c chan core.Message, err error) {
 			}
 			if err != nil {
 				time.Sleep(time.Second)
-				core.ReplyTo(msg, runtime.NewStatusError(0, runLocation, err).SetDuration(time.Since(start)))
+				core.ReplyTo(msg, runtime.NewStatusError(0, startupLocation, err).SetDuration(time.Since(start)))
 			} else {
 				time.Sleep(time.Second + (time.Millisecond * 900))
 				core.ReplyTo(msg, runtime.NewStatusOK().SetDuration(time.Since(start)))

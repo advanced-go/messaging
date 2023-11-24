@@ -1,14 +1,13 @@
-package content
+package core
 
 import (
 	"errors"
 	"fmt"
 	"github.com/advanced-go/core/runtime"
-	"github.com/advanced-go/messaging/core"
 	"time"
 )
 
-var msgTest = core.Message{To: "to-uri", From: "from-uri", Content: []any{
+var msgTest = Message{To: "to-uri", From: "from-uri", Content: []any{
 	"text content",
 	500,
 	Credentials(func() (username, password string, err error) { return "", "", nil }),
@@ -24,7 +23,7 @@ var msgTest = core.Message{To: "to-uri", From: "from-uri", Content: []any{
 
 func ExampleAccessCredentials() {
 	fmt.Printf("test: AccessCredentials(nil) -> %v\n", AccessCredentials(nil) != nil)
-	fmt.Printf("test: AccessCredentials(msg) -> %v\n", AccessCredentials(&core.Message{To: "to-uri"}) != nil)
+	fmt.Printf("test: AccessCredentials(msg) -> %v\n", AccessCredentials(&Message{To: "to-uri"}) != nil)
 	fmt.Printf("test: AccessCredentials(msg) -> %v\n", AccessCredentials(&msgTest) != nil)
 
 	//Output:
@@ -35,7 +34,7 @@ func ExampleAccessCredentials() {
 
 func ExampleAccessResource() {
 	fmt.Printf("test: AccessResource(nil) -> %v\n", AccessResource(nil))
-	fmt.Printf("test: AccessResource(msg) -> %v\n", AccessResource(&core.Message{To: "to-uri"}))
+	fmt.Printf("test: AccessResource(msg) -> %v\n", AccessResource(&Message{To: "to-uri"}))
 	fmt.Printf("test: AccessResource(msg) -> %v\n", AccessResource(&msgTest))
 
 	//Output:

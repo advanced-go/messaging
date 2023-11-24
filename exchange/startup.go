@@ -1,31 +1,34 @@
-package startup
+package exchange
 
 import (
 	"errors"
 	"fmt"
 	"github.com/advanced-go/core/runtime"
-	"github.com/advanced-go/messaging/content"
 	"github.com/advanced-go/messaging/core"
 	"net/http"
 	"time"
 )
 
 const (
-	runLocation = PkgPath + "/Run"
+	startupLocation = PkgPath + "/Startup"
 )
 
-// Run - templated function to start all registered resources.
-func Run[E runtime.ErrorHandler](duration time.Duration, content content.Map) (status runtime.Status) {
+// Startup - templated function to start all registered resources.
+func Startup[E runtime.ErrorHandler](duration time.Duration, content core.Map) (status runtime.Status) {
+	return startup[E](exchDir, duration, content)
+}
+
+func startup[E runtime.ErrorHandler](directory Directory, duration time.Duration, content core.Map) (status runtime.Status) {
 	var e E
 	var failures []string
-	var count = core.Directory.Count()
+	var count = directory.Count()
 
 	if count == 0 {
 		return runtime.NewStatusOK()
 	}
 	cache := core.NewMessageCache()
-	toSend := createToSend(content, core.NewMessageCacheHandler(cache))
-	sendMessages(toSend)
+	toSend := createToSend(directory, content, core.NewMessageCacheHandler(cache))
+	sendMessages(directory, toSend)
 	for wait := time.Duration(float64(duration) * 0.25); duration >= 0; duration -= wait {
 		time.Sleep(wait)
 		// Check for completion
@@ -40,18 +43,18 @@ func Run[E runtime.ErrorHandler](duration time.Duration, content content.Map) (s
 		}
 		break
 	}
-	core.Shutdown()
+	Shutdown()
 	if len(failures) > 0 {
 		handleErrors[E](failures, cache)
 		return runtime.NewStatus(http.StatusInternalServerError)
 	}
 	//return e.Handle("", runLocation, errors.New(fmt.Sprintf("response counts < directory entries [%v] [%v]", cache.Count(), directory.Count()))).SetCode(runtime.StatusDeadlineExceeded)
-	return e.Handle(runtime.NewStatusError(runtime.StatusDeadlineExceeded, runLocation, errors.New(fmt.Sprintf("response counts < directory entries [%v] [%v]", cache.Count(), core.Directory.Count()))), "", "")
+	return e.Handle(runtime.NewStatusError(runtime.StatusDeadlineExceeded, startupLocation, errors.New(fmt.Sprintf("response counts < directory entries [%v] [%v]", cache.Count(), directory.Count()))), "", "")
 }
 
-func createToSend(cm content.Map, fn core.MessageHandler) core.MessageMap {
+func createToSend(directory Directory, cm core.Map, fn core.MessageHandler) core.MessageMap {
 	m := make(core.MessageMap)
-	for _, k := range core.Directory.Uri() {
+	for _, k := range directory.List() {
 		msg := core.Message{To: k, From: core.HostName, Event: core.StartupEvent, Status: nil, ReplyTo: fn}
 		if cm != nil {
 			if content, ok := cm[k]; ok {
@@ -63,9 +66,9 @@ func createToSend(cm content.Map, fn core.MessageHandler) core.MessageMap {
 	return m
 }
 
-func sendMessages(msgs core.MessageMap) {
+func sendMessages(directory Directory, msgs core.MessageMap) {
 	for k := range msgs {
-		core.Directory.Send(msgs[k])
+		directory.Send(msgs[k])
 	}
 }
 

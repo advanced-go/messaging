@@ -1,8 +1,4 @@
-package content
-
-import (
-	"github.com/advanced-go/messaging/core"
-)
+package core
 
 // Map - slice of any content to be included in a message
 type Map map[string][]any
@@ -16,7 +12,7 @@ type Resource struct {
 }
 
 // AccessCredentials - access function for Credentials in a message
-func AccessCredentials(msg *core.Message) Credentials {
+func AccessCredentials(msg *Message) Credentials {
 	if msg == nil || msg.Content == nil {
 		return nil
 	}
@@ -29,7 +25,7 @@ func AccessCredentials(msg *core.Message) Credentials {
 }
 
 // AccessResource - access function for a resource in a message
-func AccessResource(msg *core.Message) Resource {
+func AccessResource(msg *Message) Resource {
 	if msg == nil || msg.Content == nil {
 		return Resource{}
 	}
