@@ -73,9 +73,9 @@ func Example_SendError() {
 	fmt.Printf("test: Send(%v) -> : %v\n", uri, testDir.Send(core.Message{To: uri}))
 
 	//Output:
-	//test: Send(urn:test) -> : entry not found: [urn:test]
+	//test: Send(urn:test) -> : Invalid Argument [entry not found: [urn:test]]
 	//test: Add(urn:test) -> : ok
-	//test: Send(urn:test) -> : entry channel is nil: [urn:test]
+	//test: Send(urn:test) -> : Invalid Content [entry channel is nil: [urn:test]]
 
 }
 
@@ -90,9 +90,9 @@ func Example_Send() {
 	testDir.Add(uri2, c)
 	testDir.Add(uri3, c)
 
-	testDir.Send(core.Message{To: uri1, From: core.PkgPath, Event: core.StartupEvent})
-	testDir.Send(core.Message{To: uri2, From: core.PkgPath, Event: core.StartupEvent})
-	testDir.Send(core.Message{To: uri3, From: core.PkgPath, Event: core.StartupEvent})
+	testDir.Send(core.Message{To: uri1, From: PkgPath, Event: core.StartupEvent})
+	testDir.Send(core.Message{To: uri2, From: PkgPath, Event: core.StartupEvent})
+	testDir.Send(core.Message{To: uri3, From: PkgPath, Event: core.StartupEvent})
 
 	time.Sleep(time.Second * 1)
 	resp1 := <-c

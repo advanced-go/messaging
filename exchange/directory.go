@@ -3,9 +3,14 @@ package exchange
 import (
 	"errors"
 	"fmt"
+	"github.com/advanced-go/core/runtime"
 	"github.com/advanced-go/messaging/core"
 	"sort"
 	"sync"
+)
+
+const (
+	dirSendLocation = PkgPath + "/Directory/Send"
 )
 
 // Directory - exchange directory
@@ -13,7 +18,7 @@ type Directory interface {
 	Add(uri string, c chan core.Message)
 	Count() int
 	List() []string
-	Send(msg core.Message) error
+	Send(msg core.Message) runtime.Status
 	Shutdown()
 }
 
@@ -60,17 +65,17 @@ func (d *directory) List() []string {
 	return uri
 }
 
-func (d *directory) Send(msg core.Message) error {
+func (d *directory) Send(msg core.Message) runtime.Status {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
 	if e, ok := d.m[msg.To]; ok {
 		if e.c == nil {
-			return errors.New(fmt.Sprintf("entry channel is nil: [%v]", msg.To))
+			return runtime.NewStatusError(runtime.StatusInvalidContent, dirSendLocation, errors.New(fmt.Sprintf("entry channel is nil: [%v]", msg.To)))
 		}
 		e.c <- msg
-		return nil
+		return runtime.NewStatusOK()
 	}
-	return errors.New(fmt.Sprintf("entry not found: [%v]", msg.To))
+	return runtime.NewStatusError(runtime.StatusInvalidArgument, dirSendLocation, errors.New(fmt.Sprintf("entry not found: [%v]", msg.To)))
 }
 
 func (d *directory) Shutdown() {

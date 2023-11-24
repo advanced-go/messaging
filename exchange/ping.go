@@ -33,9 +33,9 @@ func ping[E runtime.ErrorHandler](directory Directory, ctx context.Context, uri 
 	}
 	cache := core.NewMessageCache()
 	msg := core.Message{To: uri, From: PkgPath, Event: core.PingEvent, Status: nil, ReplyTo: core.NewMessageCacheHandler(cache)}
-	err := directory.Send(msg)
-	if err != nil {
-		return e.Handle(runtime.NewStatusError(http.StatusInternalServerError, pingLocation, err), runtime.RequestId(ctx), "")
+	status = directory.Send(msg)
+	if !status.OK() {
+		return e.Handle(status, runtime.RequestId(ctx), pingLocation)
 	}
 	duration := maxWait
 	for wait := time.Duration(float64(duration) * 0.20); duration >= 0; duration -= wait {
