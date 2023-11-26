@@ -18,14 +18,15 @@ type MessageMap map[string]Message
 // MessageHandler - function type to process a Message
 type MessageHandler func(msg Message)
 
-// Message - message access data
+// Message - message payload
 type Message struct {
-	To      string
-	From    string
-	Event   string
-	Status  runtime.Status
-	Content []any
-	ReplyTo MessageHandler
+	To        string
+	From      string
+	Event     string
+	RelatesTo map[string]string
+	Status    runtime.Status
+	Content   []any
+	ReplyTo   MessageHandler
 }
 
 // ReplyTo - function used by message recipient to reply with a runtime.Status
