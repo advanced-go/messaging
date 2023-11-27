@@ -1,8 +1,6 @@
 # messaging
 
-Messaging inspired to capitalize on the Go language for application development. Determining the patterns that need to be employed is critical for writing clear idiomatic Go code. This YouTube video [Edward Muller - Go Anti-Patterns][emuller], does an excellent job of framing idiomatic go. 
-[Robert Griesemer - The Evolution of Go][rgriesemer], @ 4:00 minutes, a
-
+Messaging inspired to capitalize on the Go language for application development. Determining the patterns that need to be employed is critical for writing clear idiomatic Go code. This YouTube video 
 
 ## core
 [Core][corepkg] provides functionality for processing an Http request/response. Exchange functionality is provied via a templated function, utilizing
