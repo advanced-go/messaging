@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	sendLoc = PkgPath + "/Send"
+	sendLoc = PkgPath + ":Send"
 )
 
 var exchDir = NewDirectory()
