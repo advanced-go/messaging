@@ -3,16 +3,13 @@
 Messaging inspired to capitalize on the Go language for application development. Determining the patterns that need to be employed is critical for writing clear idiomatic Go code. This YouTube video 
 
 ## core
-[Core][corepkg] provides functionality for processing an Http request/response. Exchange functionality is provied via a templated function, utilizing
-template paramters for error processing, deserialization type, and the function for processing the http.Client.Do():
+[Core][corepkg] provides the types for a message, message content, and a message cache.
 
 ## exchange
-[Exchange][exchangepkg] provides functionality for processing an Http request/response. Exchange functionality is provied via a templated function, utilizing
-template paramters for error processing, deserialization type, and the function for processing the http.Client.Do():
+[Exchange][exchangepkg] provides functionality for sending messages to registered resources.
 
 ## mux
-[Mux][muxpkg] provides functionality for processing an Http request/response. Exchange functionality is provied via a templated function, utilizing
-template paramters for error processing, deserialization type, and the function for processing the http.Client.Do():
+[Mux][muxpkg] provides HTTP request multiplexing, processing the request path as a URN. 
 
 [corepkg]: <https://pkg.go.dev/github.com/advanced-go/messaging/core>
 [exchangepkg]: <https://pkg.go.dev/github.com/advanced-go/messaging/exchange>
