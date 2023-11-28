@@ -1,6 +1,6 @@
 # messaging
 
-Messaging inspired to capitalize on the Go language for application development. Determining the patterns that need to be employed is critical for writing clear idiomatic Go code. This YouTube video 
+Messaging provides functionality for resources to communicate. Resources may be in process, or out of process, accessible via HTTP. 
 
 ## core
 [Core][corepkg] provides types for a message, message content, and a message cache.
