@@ -48,6 +48,5 @@ func ReplyTo(msg Message, status runtime.Status) {
 func NewMessageCacheHandler(cache MessageCache) MessageHandler {
 	return func(msg Message) {
 		cache.Add(msg)
-		//return runtime.NewStatusOK()
 	}
 }

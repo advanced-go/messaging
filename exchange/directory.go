@@ -73,7 +73,7 @@ func (d *directory) Send(msg core.Message) runtime.Status {
 			return runtime.NewStatusError(runtime.StatusInvalidContent, dirSendLocation, errors.New(fmt.Sprintf("entry channel is nil: [%v]", msg.To)))
 		}
 		e.c <- msg
-		return runtime.NewStatusOK()
+		return runtime.StatusOK()
 	}
 	return runtime.NewStatusError(runtime.StatusInvalidArgument, dirSendLocation, errors.New(fmt.Sprintf("entry not found: [%v]", msg.To)))
 }

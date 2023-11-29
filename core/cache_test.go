@@ -3,17 +3,16 @@ package core
 import (
 	"fmt"
 	"github.com/advanced-go/core/runtime"
-	"net/http"
 )
 
 func ExampleMessageCache_Add() {
 	resp := NewMessageCache()
 
 	resp.Add(Message{To: "to-uri", From: "from-uri-0", Event: StartupEvent, Status: runtime.NewStatus(runtime.StatusNotProvided)})
-	resp.Add(Message{To: "to-uri", From: "from-uri-1", Event: StartupEvent, Status: runtime.NewStatusOK()})
+	resp.Add(Message{To: "to-uri", From: "from-uri-1", Event: StartupEvent, Status: runtime.StatusOK()})
 	resp.Add(Message{To: "to-uri", From: "from-uri-2", Event: PingEvent, Status: runtime.NewStatus(runtime.StatusNotProvided)})
 	resp.Add(Message{To: "to-uri", From: "from-uri-3", Event: PingEvent, Status: runtime.NewStatus(runtime.StatusNotProvided)})
-	resp.Add(Message{To: "to-uri", From: "from-uri-4", Event: PingEvent, Status: runtime.NewStatus(http.StatusOK)})
+	resp.Add(Message{To: "to-uri", From: "from-uri-4", Event: PingEvent, Status: runtime.StatusOK()})
 
 	fmt.Printf("test: count() -> : %v\n", resp.Count())
 
@@ -49,10 +48,10 @@ func ExampleMessageCache_Uri() {
 	resp := NewMessageCache()
 
 	resp.Add(Message{To: "to-uri", From: "from-uri-0", Event: StartupEvent, Status: runtime.NewStatus(runtime.StatusNotProvided)})
-	resp.Add(Message{To: "to-uri", From: "from-uri-1", Event: StartupEvent, Status: runtime.NewStatusOK()})
+	resp.Add(Message{To: "to-uri", From: "from-uri-1", Event: StartupEvent, Status: runtime.StatusOK()})
 	resp.Add(Message{To: "to-uri", From: "from-uri-2", Event: PingEvent, Status: runtime.NewStatus(runtime.StatusNotProvided)})
 	resp.Add(Message{To: "to-uri", From: "from-uri-3", Event: PingEvent, Status: runtime.NewStatus(runtime.StatusNotProvided)})
-	resp.Add(Message{To: "to-uri", From: "from-uri-4", Event: PingEvent, Status: runtime.NewStatus(http.StatusOK)})
+	resp.Add(Message{To: "to-uri", From: "from-uri-4", Event: PingEvent, Status: runtime.StatusOK()})
 
 	fmt.Printf("test: count() -> : %v\n", resp.Count())
 

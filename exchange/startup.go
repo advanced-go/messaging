@@ -24,7 +24,7 @@ func startup[E runtime.ErrorHandler](directory Directory, duration time.Duration
 	var count = directory.Count()
 
 	if count == 0 {
-		return runtime.NewStatusOK()
+		return runtime.StatusOK()
 	}
 	cache := core.NewMessageCache()
 	toSend := createToSend(directory, content, core.NewMessageCacheHandler(cache))
@@ -39,7 +39,7 @@ func startup[E runtime.ErrorHandler](directory Directory, duration time.Duration
 		failures = cache.Exclude(core.StartupEvent, http.StatusOK)
 		if len(failures) == 0 {
 			handleStatus(cache)
-			return runtime.NewStatusOK()
+			return runtime.StatusOK()
 		}
 		break
 	}
