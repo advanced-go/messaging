@@ -12,14 +12,17 @@ func empty(d *directory) {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
 	for key, e := range d.m {
-		if e.c != nil {
-			close(e.c)
+		if e.cmd != nil {
+			close(e.cmd)
+		}
+		if e.data != nil {
+			close(e.data)
 		}
 		delete(d.m, key)
 	}
 }
 
-func get(uri string, d *directory) *entry {
+func get(uri string, d *directory) *Mailbox {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
 	return d.m[uri]
@@ -35,13 +38,13 @@ func Example_Add() {
 	d2 := get(uri, testDir)
 	fmt.Printf("test: get(%v) -> : %v\n", uri, d2)
 
-	testDir.Add(uri, nil)
+	testDir.add(newMailbox(uri, nil, nil))
 	fmt.Printf("test: Add(%v) -> : ok\n", uri)
 	fmt.Printf("test: Count() -> : %v\n", testDir.Count())
 	d2 = get(uri, testDir)
 	fmt.Printf("test: get(%v) -> : %v\n", uri, d2)
 
-	testDir.Add(uri2, nil)
+	testDir.add(newMailbox(uri2, nil, nil))
 	fmt.Printf("test: Add(%v) -> : ok\n", uri2)
 	fmt.Printf("test: Count() -> : %v\n", testDir.Count())
 	d2 = get(uri2, testDir)
@@ -54,10 +57,10 @@ func Example_Add() {
 	//test: get(urn:test) -> : <nil>
 	//test: Add(urn:test) -> : ok
 	//test: Count() -> : 1
-	//test: get(urn:test) -> : &{urn:test <nil>}
+	//test: get(urn:test) -> : &{urn:test <nil> <nil>}
 	//test: Add(urn:test:two) -> : ok
 	//test: Count() -> : 2
-	//test: get(urn:test:two) -> : &{urn:test:two <nil>}
+	//test: get(urn:test:two) -> : &{urn:test:two <nil> <nil>}
 	//test: List() -> : [urn:test urn:test:two]
 
 }
@@ -66,16 +69,16 @@ func Example_SendError() {
 	uri := "urn:test"
 	empty(testDir)
 
-	fmt.Printf("test: Send(%v) -> : %v\n", uri, testDir.Send(core.Message{To: uri}))
+	fmt.Printf("test: SendCmd(%v) -> : %v\n", uri, testDir.SendCmd(core.Message{To: uri}))
 
-	testDir.Add(uri, nil)
+	testDir.add(newMailbox(uri, nil, nil))
 	fmt.Printf("test: Add(%v) -> : ok\n", uri)
-	fmt.Printf("test: Send(%v) -> : %v\n", uri, testDir.Send(core.Message{To: uri}))
+	fmt.Printf("test: SendCmd(%v) -> : %v\n", uri, testDir.SendCmd(core.Message{To: uri}))
 
 	//Output:
-	//test: Send(urn:test) -> : Invalid Argument [entry not found: [urn:test]]
+	//test: SendCmd(urn:test) -> : Invalid Argument [entry not found: [urn:test]]
 	//test: Add(urn:test) -> : ok
-	//test: Send(urn:test) -> : Invalid Content [entry channel is nil: [urn:test]]
+	//test: SendCmd(urn:test) -> : Invalid Content [entry command channel is nil: [urn:test]]
 
 }
 
@@ -86,13 +89,13 @@ func Example_Send() {
 	c := make(chan core.Message, 16)
 	empty(testDir)
 
-	testDir.Add(uri1, c)
-	testDir.Add(uri2, c)
-	testDir.Add(uri3, c)
+	testDir.add(newMailbox(uri1, c, nil))
+	testDir.add(newMailbox(uri2, c, nil))
+	testDir.add(newMailbox(uri3, c, nil))
 
-	testDir.Send(core.Message{To: uri1, From: PkgPath, Event: core.StartupEvent})
-	testDir.Send(core.Message{To: uri2, From: PkgPath, Event: core.StartupEvent})
-	testDir.Send(core.Message{To: uri3, From: PkgPath, Event: core.StartupEvent})
+	testDir.SendCmd(core.Message{To: uri1, From: PkgPath, Event: core.StartupEvent})
+	testDir.SendCmd(core.Message{To: uri2, From: PkgPath, Event: core.StartupEvent})
+	testDir.SendCmd(core.Message{To: uri3, From: PkgPath, Event: core.StartupEvent})
 
 	time.Sleep(time.Second * 1)
 	resp1 := <-c

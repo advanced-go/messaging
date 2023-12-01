@@ -14,20 +14,26 @@ const (
 var exchDir = NewDirectory()
 
 // Register - add an entry to the exchange directory
-func Register(uri string, c chan core.Message) error {
-	if uri == "" {
-		return errors.New("invalid argument: uri is empty")
+func Register(m *Mailbox) error {
+	if m == nil {
+		return errors.New(fmt.Sprintf("invalid argument: mailbox is nil"))
 	}
-	if c == nil {
-		return errors.New(fmt.Sprintf("invalid argument: channel is nil for [%v]", uri))
-	}
-	exchDir.Add(uri, c)
+	exchDir.add(m)
 	return nil
 }
 
-// Send - send a message
-func Send(msg core.Message) runtime.Status {
-	status := exchDir.Send(msg)
+// SendCmd - send to command channel
+func SendCmd(msg core.Message) runtime.Status {
+	status := exchDir.SendCmd(msg)
+	if !status.OK() {
+		status.AddLocation(sendLoc)
+	}
+	return status
+}
+
+// SendData - send to data channel
+func SendData(msg core.Message) runtime.Status {
+	status := exchDir.SendData(msg)
 	if !status.OK() {
 		status.AddLocation(sendLoc)
 	}

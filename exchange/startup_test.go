@@ -12,8 +12,8 @@ var credFn core.Credentials = func() (string, string, error) {
 	return "", "", nil
 }
 
-func testRegister(uri string, c chan core.Message) error {
-	startupDir.Add(uri, c)
+func testRegister(uri string, cmd, data chan core.Message) error {
+	startupDir.add(newMailbox(uri, cmd, data))
 	return nil
 }
 
@@ -25,8 +25,8 @@ func ExampleCreateToSend() {
 	none := "/startup/none"
 	one := "/startup/one"
 
-	testRegister(none, nil)
-	testRegister(one, nil)
+	testRegister(none, nil, nil)
+	testRegister(one, nil, nil)
 
 	m := createToSend(startupDir, nil, nil)
 	msg := m[none]
@@ -44,23 +44,23 @@ func ExampleCreateToSend() {
 }
 
 func ExampleStartup_Success() {
-	uri1 := "urn:startup:good"
-	uri2 := "urn:startup:bad"
-	uri3 := "urn:startup:depends"
+	uri1 := "github.com/startup/good"
+	uri2 := "github.com/startup/bad"
+	uri3 := "github.com/startup/depends"
 
 	start = time.Now()
 	empty(startupDir)
 
 	c := make(chan core.Message, 16)
-	testRegister(uri1, c)
+	testRegister(uri1, c, nil)
 	go startupGood(c)
 
 	c = make(chan core.Message, 16)
-	testRegister(uri2, c)
+	testRegister(uri2, c, nil)
 	go startupBad(c)
 
 	c = make(chan core.Message, 16)
-	testRegister(uri3, c)
+	testRegister(uri3, c, nil)
 	go startupDepends(c, nil)
 
 	status := startup[runtime.TestError](startupDir, time.Second*2, nil)
@@ -68,31 +68,31 @@ func ExampleStartup_Success() {
 	fmt.Printf("test: Startup() -> [%v]\n", status)
 
 	//Output:
-	//startup successful for startup [urn:startup:bad] : 0s
-	//startup successful for startup [urn:startup:depends] : 0s
-	//startup successful for startup [urn:startup:good] : 0s
+	//startup successful: [github.com/startup/bad] : 0s
+	//startup successful: [github.com/startup/depends] : 0s
+	//startup successful: [github.com/startup/good] : 0s
 	//test: Startup() -> [OK]
 
 }
 
 func ExampleStartup_Failure() {
-	uri1 := "urn:startup:good"
-	uri2 := "urn:startup:bad"
-	uri3 := "urn:startup:depends"
+	uri1 := "github.com/startup/good"
+	uri2 := "github.com/startup/bad"
+	uri3 := "github.com/startup/depends"
 
 	start = time.Now()
 	empty(startupDir)
 
 	c := make(chan core.Message, 16)
-	testRegister(uri1, c)
+	testRegister(uri1, c, nil)
 	go startupGood(c)
 
 	c = make(chan core.Message, 16)
-	testRegister(uri2, c)
+	testRegister(uri2, c, nil)
 	go startupBad(c)
 
 	c = make(chan core.Message, 16)
-	testRegister(uri3, c)
+	testRegister(uri3, c, nil)
 	go startupDepends(c, errors.New("startup failure error message"))
 
 	status := startup[runtime.TestError](startupDir, time.Second*2, nil)

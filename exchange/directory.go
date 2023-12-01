@@ -10,42 +10,39 @@ import (
 )
 
 const (
-	dirSendLocation = PkgPath + "/Directory/Send"
+	dirSendLocation = PkgPath + ":Directory/Send"
 )
 
 // Directory - exchange directory
 type Directory interface {
-	Add(uri string, c chan core.Message)
+	add(m *Mailbox) error
 	Count() int
 	List() []string
-	Send(msg core.Message) runtime.Status
+	SendCmd(msg core.Message) runtime.Status
+	SendData(msg core.Message) runtime.Status
 	Shutdown()
 }
 
-type entry struct {
-	uri string
-	c   chan core.Message
-}
-
 type directory struct {
-	m  map[string]*entry
+	m  map[string]*Mailbox
 	mu sync.RWMutex
 }
 
 // NewDirectory - create a new directory
 func NewDirectory() Directory {
 	e := new(directory)
-	e.m = make(map[string]*entry)
+	e.m = make(map[string]*Mailbox)
 	return e
 }
 
-func (d *directory) Add(uri string, c chan core.Message) {
+func (d *directory) add(m *Mailbox) error {
+	if m == nil {
+		return errors.New(fmt.Sprintf("invalid argument: mailbox is nil"))
+	}
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	d.m[uri] = &entry{
-		uri: uri,
-		c:   c,
-	}
+	d.m[m.uri] = m
+	return nil
 }
 
 func (d *directory) Count() int {
@@ -65,14 +62,27 @@ func (d *directory) List() []string {
 	return uri
 }
 
-func (d *directory) Send(msg core.Message) runtime.Status {
+func (d *directory) SendCmd(msg core.Message) runtime.Status {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
 	if e, ok := d.m[msg.To]; ok {
-		if e.c == nil {
-			return runtime.NewStatusError(runtime.StatusInvalidContent, dirSendLocation, errors.New(fmt.Sprintf("entry channel is nil: [%v]", msg.To)))
+		if e.cmd == nil {
+			return runtime.NewStatusError(runtime.StatusInvalidContent, dirSendLocation, errors.New(fmt.Sprintf("entry command channel is nil: [%v]", msg.To)))
 		}
-		e.c <- msg
+		e.cmd <- msg
+		return runtime.StatusOK()
+	}
+	return runtime.NewStatusError(runtime.StatusInvalidArgument, dirSendLocation, errors.New(fmt.Sprintf("entry not found: [%v]", msg.To)))
+}
+
+func (d *directory) SendData(msg core.Message) runtime.Status {
+	d.mu.RLock()
+	defer d.mu.RUnlock()
+	if e, ok := d.m[msg.To]; ok {
+		if e.data == nil {
+			return runtime.NewStatusError(runtime.StatusInvalidContent, dirSendLocation, errors.New(fmt.Sprintf("entry data channel is nil: [%v]", msg.To)))
+		}
+		e.data <- msg
 		return runtime.StatusOK()
 	}
 	return runtime.NewStatusError(runtime.StatusInvalidArgument, dirSendLocation, errors.New(fmt.Sprintf("entry not found: [%v]", msg.To)))
@@ -82,8 +92,8 @@ func (d *directory) Shutdown() {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
 	for _, e := range d.m {
-		if e.c != nil {
-			e.c <- core.Message{To: e.uri, Event: core.ShutdownEvent}
+		if e.cmd != nil {
+			e.cmd <- core.Message{To: e.uri, Event: core.ShutdownEvent}
 		}
 	}
 }

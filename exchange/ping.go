@@ -29,11 +29,10 @@ func ping[E runtime.ErrorHandler](directory Directory, ctx context.Context, uri 
 	if uri == "" {
 		return e.Handle(runtime.NewStatusError(runtime.StatusInvalidArgument, pingLocation, errors.New("invalid argument: ping uri is empty")),
 			runtime.RequestId(ctx), "")
-
 	}
 	cache := core.NewMessageCache()
 	msg := core.Message{To: uri, From: PkgPath, Event: core.PingEvent, Status: nil, ReplyTo: core.NewMessageCacheHandler(cache)}
-	status = directory.Send(msg)
+	status = directory.SendCmd(msg)
 	if !status.OK() {
 		return e.Handle(status, runtime.RequestId(ctx), pingLocation)
 	}

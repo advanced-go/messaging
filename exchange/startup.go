@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	startupLocation = PkgPath + "/Startup"
+	startupLocation = PkgPath + ":Startup"
 )
 
 // Startup - templated function to start all registered resources.
@@ -48,7 +48,6 @@ func startup[E runtime.ErrorHandler](directory Directory, duration time.Duration
 		handleErrors[E](failures, cache)
 		return runtime.NewStatus(http.StatusInternalServerError)
 	}
-	//return e.Handle("", runLocation, errors.New(fmt.Sprintf("response counts < directory entries [%v] [%v]", cache.Count(), directory.Count()))).SetCode(runtime.StatusDeadlineExceeded)
 	return e.Handle(runtime.NewStatusError(runtime.StatusDeadlineExceeded, startupLocation, errors.New(fmt.Sprintf("response counts < directory entries [%v] [%v]", cache.Count(), directory.Count()))), "", "")
 }
 
@@ -68,7 +67,7 @@ func createToSend(directory Directory, cm core.Map, fn core.MessageHandler) core
 
 func sendMessages(directory Directory, msgs core.MessageMap) {
 	for k := range msgs {
-		directory.Send(msgs[k])
+		directory.SendCmd(msgs[k])
 	}
 }
 
@@ -80,9 +79,7 @@ func handleErrors[E runtime.ErrorHandler](failures []string, cache core.MessageC
 			continue
 		}
 		if msg.Status != nil {
-			//.Handle("", msg.Status.Location()[0], msg.Status.Errors()...)
 			e.Handle(runtime.NewStatusError(http.StatusInternalServerError, msg.Status.Location()[0], msg.Status.Errors()...), "", "")
-
 		}
 	}
 }
@@ -94,7 +91,7 @@ func handleStatus(cache core.MessageCache) {
 			continue
 		}
 		if msg.Status != nil {
-			fmt.Printf("startup successful for startup [%v] : %s\n", uri, msg.Status.Duration())
+			fmt.Printf("startup successful: [%v] : %s\n", uri, msg.Status.Duration())
 		}
 	}
 }
