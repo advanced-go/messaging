@@ -12,8 +12,8 @@ func empty(d *directory) {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
 	for key, e := range d.m {
-		if e.cmd != nil {
-			close(e.cmd)
+		if e.ctrl != nil {
+			close(e.ctrl)
 		}
 		if e.data != nil {
 			close(e.data)

@@ -9,26 +9,13 @@ import (
 var agentDir = any(NewDirectory()).(*directory)
 
 func agentMessageHandler(msg core.Message) {
-	s := "test: NewCmdAgent() -> %v\n"
-	fmt.Printf(fmt.Sprintf(s, msg.Event))
-	/*switch msg.Event {
-	case core.StartupEvent:
-	case core.ShutdownEvent:
-	case core.PauseEvent:
-	case core.ResumeEvent:
-	case core.PingEvent:
-		fmt.Printf("test: agentMessageHandler() -> PauseEvent\n")
-		fmt.Printf("test: agentMessageHandler() -> ResumeEvent\n")
-		fmt.Printf("test: agentMessageHandler() -> PingEvent\n")
-		fmt.Printf("test: agentMessageHandler() -> ReconfigureEvent\n")
-	}
-	*/
+	fmt.Printf(fmt.Sprintf("test: NewAgent() -> %v\n", msg.Event))
 }
 
-func Example_NewCmdAgent() {
+func Example_NewAgent() {
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Printf("test: NewCmdAgent() -> [recovered:%v]\n", r)
+			fmt.Printf("test: NewAgent() -> [recovered:%v]\n", r)
 		}
 	}()
 	uri := "github.com/advanced-go/example-domain/activity"
@@ -37,7 +24,7 @@ func Example_NewCmdAgent() {
 	if err != nil {
 		fmt.Printf("test: add() -> [err:%v]\n", err)
 	}
-	a, err1 := newCmdAgent(agentDir, uri, agentMessageHandler)
+	a, err1 := newAgent(agentDir, uri, agentMessageHandler, nil)
 	if err1 != nil {
 		fmt.Printf("test: add() -> [err:%v]\n", err1)
 	}
@@ -60,12 +47,10 @@ func Example_NewCmdAgent() {
 	c <- core.Message{}
 
 	//Output:
-	//test: NewCmdAgent() -> event:startup
-	//test: NewCmdAgent() -> event:pause
-	//test: NewCmdAgent() -> event:resume
-	//test: NewCmdAgent() -> event:ping
-	//test: NewCmdAgent() -> event:reconfigure
-	//test: NewCmdAgent() -> event:shutdown
-	//test: NewCmdAgent() -> [recovered:send on closed channel]
+	//test: NewAgent() -> event:startup
+	//test: NewAgent() -> event:ping
+	//test: NewAgent() -> event:reconfigure
+	//test: NewAgent() -> event:shutdown
+	//test: NewAgent() -> [recovered:send on closed channel]
 
 }

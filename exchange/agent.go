@@ -11,15 +11,16 @@ type Agent interface {
 }
 
 type agentCfg struct {
-	cmd        chan core.Message
-	cmdHandler core.MessageHandler
+	m           *Mailbox
+	ctrlHandler core.MessageHandler
+	dataHandler core.MessageHandler
 }
 
-func NewCmdAgent(uri string, cmdHandler core.MessageHandler) (Agent, error) {
-	return newCmdAgent(exchDir, uri, cmdHandler)
+func NewAgent(uri string, ctrlHandler, dataHandler core.MessageHandler) (Agent, error) {
+	return newAgent(exchDir, uri, ctrlHandler, dataHandler)
 }
 
-func newCmdAgent(dir Directory, uri string, cmdHandler core.MessageHandler) (Agent, error) {
+func newAgent(dir Directory, uri string, ctrlHandler, dataHandler core.MessageHandler) (Agent, error) {
 	if len(uri) == 0 {
 		return nil, errors.New(fmt.Sprintf("invalid argument: uri is empty"))
 	}
@@ -28,28 +29,48 @@ func newCmdAgent(dir Directory, uri string, cmdHandler core.MessageHandler) (Age
 		return nil, err
 	}
 	cfg := new(agentCfg)
-	cfg.cmd = m.cmd
-	cfg.cmdHandler = cmdHandler
+	cfg.m = m
+	cfg.ctrlHandler = ctrlHandler
+	cfg.dataHandler = dataHandler
 	return cfg, nil
 }
 
 func (a *agentCfg) Run() {
-	go run(a.cmd, a.cmdHandler)
+	go run(a)
 }
 
-func run(cmd chan core.Message, cmdHandler core.MessageHandler) {
+func run(cfg *agentCfg) {
+	paused := false
 	for {
+		if cfg.m.data != nil && !paused {
+			select {
+			case msg, open := <-cfg.m.data:
+				if open {
+					go cfg.dataHandler(msg)
+				}
+			default:
+			}
+		}
 		select {
-		case msg, open := <-cmd:
+		case msg, open := <-cfg.m.ctrl:
 			if !open {
 				return
 			}
-			if msg.Event == core.ShutdownEvent {
-				cmdHandler(msg)
-				close(cmd)
+			switch msg.Event {
+			case core.PauseEvent:
+				paused = true
+			case core.ResumeEvent:
+				paused = false
+			case core.ShutdownEvent:
+				cfg.ctrlHandler(msg)
+				close(cfg.m.ctrl)
+				if cfg.m.data != nil {
+					close(cfg.m.data)
+				}
 				return
+			default:
+				go cfg.ctrlHandler(msg)
 			}
-			go cmdHandler(msg)
 		default:
 		}
 	}

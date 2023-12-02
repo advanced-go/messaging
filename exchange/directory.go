@@ -55,10 +55,10 @@ func (d *directory) SendCmd(msg core.Message) runtime.Status {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
 	if e, ok := d.m[msg.To]; ok {
-		if e.cmd == nil {
+		if e.ctrl == nil {
 			return runtime.NewStatusError(runtime.StatusInvalidContent, dirSendLocation, errors.New(fmt.Sprintf("entry command channel is nil: [%v]", msg.To)))
 		}
-		e.cmd <- msg
+		e.ctrl <- msg
 		return runtime.StatusOK()
 	}
 	return runtime.NewStatusError(runtime.StatusInvalidArgument, dirSendLocation, errors.New(fmt.Sprintf("entry not found: [%v]", msg.To)))
@@ -81,8 +81,8 @@ func (d *directory) Shutdown() {
 	d.mu.RLock()
 	defer d.mu.RUnlock()
 	for _, e := range d.m {
-		if e.cmd != nil {
-			e.cmd <- core.Message{To: e.uri, Event: core.ShutdownEvent}
+		if e.ctrl != nil {
+			e.ctrl <- core.Message{To: e.uri, Event: core.ShutdownEvent}
 		}
 	}
 }

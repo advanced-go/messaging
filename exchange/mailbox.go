@@ -8,7 +8,7 @@ import (
 
 type Mailbox struct {
 	uri  string
-	cmd  chan core.Message
+	ctrl chan core.Message
 	data chan core.Message
 }
 
@@ -18,7 +18,7 @@ func NewMailbox(uri string, data bool) (*Mailbox, error) {
 	}
 	m := new(Mailbox)
 	m.uri = uri
-	m.cmd = make(chan core.Message, 16)
+	m.ctrl = make(chan core.Message, 16)
 	if data {
 		m.data = make(chan core.Message, 16)
 	}

@@ -7,10 +7,11 @@ import (
 const (
 	StartupEvent     = "event:startup"
 	ShutdownEvent    = "event:shutdown"
-	PauseEvent       = "event:pause"
-	ResumeEvent      = "event:resume"
 	PingEvent        = "event:ping"
 	ReconfigureEvent = "event:reconfigure"
+
+	PauseEvent  = "event:pause"  // disable data channel receive
+	ResumeEvent = "event:resume" // enable data channel receive
 )
 
 // MessageMap - map of messages

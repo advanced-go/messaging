@@ -21,7 +21,7 @@ func Register(m *Mailbox) error {
 	if len(m.uri) == 0 {
 		return errors.New(fmt.Sprintf("invalid argument: uri is empty"))
 	}
-	if m.cmd == nil {
+	if m.ctrl == nil {
 		return errors.New(fmt.Sprintf("invalid argument: command channel is nil"))
 	}
 	add(exchDir, m)
