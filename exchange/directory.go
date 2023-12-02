@@ -15,7 +15,6 @@ const (
 
 // Directory - exchange directory
 type Directory interface {
-	add(m *Mailbox) error
 	Count() int
 	List() []string
 	SendCmd(msg core.Message) runtime.Status
@@ -33,16 +32,6 @@ func NewDirectory() Directory {
 	e := new(directory)
 	e.m = make(map[string]*Mailbox)
 	return e
-}
-
-func (d *directory) add(m *Mailbox) error {
-	if m == nil {
-		return errors.New(fmt.Sprintf("invalid argument: mailbox is nil"))
-	}
-	d.mu.Lock()
-	defer d.mu.Unlock()
-	d.m[m.uri] = m
-	return nil
 }
 
 func (d *directory) Count() int {
@@ -96,4 +85,34 @@ func (d *directory) Shutdown() {
 			e.cmd <- core.Message{To: e.uri, Event: core.ShutdownEvent}
 		}
 	}
+}
+
+func add(dir Directory, m *Mailbox) error {
+	if dir == nil {
+		return errors.New(fmt.Sprintf("invalid argument: directory is nil"))
+	}
+	if m == nil {
+		return errors.New(fmt.Sprintf("invalid argument: mailbox is nil"))
+	}
+	if d, ok := any(dir).(*directory); ok {
+		d.mu.Lock()
+		defer d.mu.Unlock()
+		d.m[m.uri] = m
+	}
+	return nil
+}
+
+func get(dir Directory, uri string) (*Mailbox, error) {
+	if dir == nil {
+		return nil, errors.New("invalid argument: directory is nil")
+	}
+	if len(uri) == 0 {
+		return nil, errors.New("invalid argument: uri is empty")
+	}
+	if d, ok := any(dir).(*directory); ok {
+		d.mu.Lock()
+		defer d.mu.Unlock()
+		return d.m[uri], nil
+	}
+	return nil, errors.New("invalid argument: Directory is not of type *directory")
 }

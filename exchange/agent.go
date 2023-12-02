@@ -11,22 +11,30 @@ type Agent interface {
 }
 
 type agentCfg struct {
-	m          *Mailbox
+	cmd        chan core.Message
 	cmdHandler core.MessageHandler
 }
 
-func NewCmdAgent(m *Mailbox, cmdHandler core.MessageHandler) (Agent, error) {
-	if m == nil {
-		return nil, errors.New(fmt.Sprintf("invalid argument: mailbox is nil"))
+func NewCmdAgent(uri string, cmdHandler core.MessageHandler) (Agent, error) {
+	return newCmdAgent(exchDir, uri, cmdHandler)
+}
+
+func newCmdAgent(dir Directory, uri string, cmdHandler core.MessageHandler) (Agent, error) {
+	if len(uri) == 0 {
+		return nil, errors.New(fmt.Sprintf("invalid argument: uri is empty"))
+	}
+	m, err := get(dir, uri)
+	if err != nil {
+		return nil, err
 	}
 	cfg := new(agentCfg)
-	cfg.m = m
+	cfg.cmd = m.cmd
 	cfg.cmdHandler = cmdHandler
 	return cfg, nil
 }
 
 func (a *agentCfg) Run() {
-	go run(a.m.cmd, a.cmdHandler)
+	go run(a.cmd, a.cmdHandler)
 }
 
 func run(cmd chan core.Message, cmdHandler core.MessageHandler) {
@@ -38,6 +46,7 @@ func run(cmd chan core.Message, cmdHandler core.MessageHandler) {
 			}
 			if msg.Event == core.ShutdownEvent {
 				cmdHandler(msg)
+				close(cmd)
 				return
 			}
 			go cmdHandler(msg)

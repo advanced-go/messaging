@@ -13,12 +13,18 @@ const (
 
 var exchDir = NewDirectory()
 
-// Register - add an entry to the exchange directory
+// Register - add a mailbox to the exchange directory
 func Register(m *Mailbox) error {
 	if m == nil {
 		return errors.New(fmt.Sprintf("invalid argument: mailbox is nil"))
 	}
-	exchDir.add(m)
+	if len(m.uri) == 0 {
+		return errors.New(fmt.Sprintf("invalid argument: uri is empty"))
+	}
+	if m.cmd == nil {
+		return errors.New(fmt.Sprintf("invalid argument: command channel is nil"))
+	}
+	add(exchDir, m)
 	return nil
 }
 

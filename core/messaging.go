@@ -5,11 +5,12 @@ import (
 )
 
 const (
-	StartupEvent  = "event:startup"
-	ShutdownEvent = "event:shutdown"
-	PingEvent     = "event:ping"
-	StatusEvent   = "event:status"
-	HostName      = "startup"
+	StartupEvent     = "event:startup"
+	ShutdownEvent    = "event:shutdown"
+	PauseEvent       = "event:pause"
+	ResumeEvent      = "event:resume"
+	PingEvent        = "event:ping"
+	ReconfigureEvent = "event:reconfigure"
 )
 
 // MessageMap - map of messages

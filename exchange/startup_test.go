@@ -13,7 +13,7 @@ var credFn core.Credentials = func() (string, string, error) {
 }
 
 func testRegister(uri string, cmd, data chan core.Message) error {
-	startupDir.add(newMailbox(uri, cmd, data))
+	add(startupDir, newMailbox(uri, cmd, data))
 	return nil
 }
 
@@ -22,8 +22,8 @@ var start time.Time
 var startupDir = any(NewDirectory()).(*directory)
 
 func ExampleCreateToSend() {
-	none := "/startup/none"
-	one := "/startup/one"
+	none := "startup/none"
+	one := "startup/one"
 
 	testRegister(none, nil, nil)
 	testRegister(one, nil, nil)
@@ -38,8 +38,8 @@ func ExampleCreateToSend() {
 	fmt.Printf("test: createToSend(map,nil) -> [to:%v] [from:%v] [credentials:%v]\n", msg.To, msg.From, core.AccessCredentials(&msg) != nil)
 
 	//Output:
-	//test: createToSend(nil,nil) -> [to:/startup/none] [from:startup]
-	//test: createToSend(map,nil) -> [to:/startup/one] [from:startup] [credentials:true]
+	//test: createToSend(nil,nil) -> [to:startup/none] [from:github.com/advanced-go/messaging/exchange:Startup]
+	//test: createToSend(map,nil) -> [to:startup/one] [from:github.com/advanced-go/messaging/exchange:Startup] [credentials:true]
 
 }
 

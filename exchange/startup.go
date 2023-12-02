@@ -54,7 +54,7 @@ func startup[E runtime.ErrorHandler](directory Directory, duration time.Duration
 func createToSend(directory Directory, cm core.Map, fn core.MessageHandler) core.MessageMap {
 	m := make(core.MessageMap)
 	for _, k := range directory.List() {
-		msg := core.Message{To: k, From: core.HostName, Event: core.StartupEvent, Status: nil, ReplyTo: fn}
+		msg := core.Message{To: k, From: startupLocation, Event: core.StartupEvent, Status: nil, ReplyTo: fn}
 		if cm != nil {
 			if content, ok := cm[k]; ok {
 				msg.Content = append(msg.Content, content...)

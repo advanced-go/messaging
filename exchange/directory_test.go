@@ -22,12 +22,6 @@ func empty(d *directory) {
 	}
 }
 
-func get(uri string, d *directory) *Mailbox {
-	d.mu.RLock()
-	defer d.mu.RUnlock()
-	return d.m[uri]
-}
-
 func Example_Add() {
 	uri := "urn:test"
 	uri2 := "urn:test:two"
@@ -35,19 +29,19 @@ func Example_Add() {
 	empty(testDir)
 
 	fmt.Printf("test: Count() -> : %v\n", testDir.Count())
-	d2 := get(uri, testDir)
+	d2, _ := get(testDir, uri)
 	fmt.Printf("test: get(%v) -> : %v\n", uri, d2)
 
-	testDir.add(newMailbox(uri, nil, nil))
+	add(testDir, newMailbox(uri, nil, nil))
 	fmt.Printf("test: Add(%v) -> : ok\n", uri)
 	fmt.Printf("test: Count() -> : %v\n", testDir.Count())
-	d2 = get(uri, testDir)
+	d2, _ = get(testDir, uri)
 	fmt.Printf("test: get(%v) -> : %v\n", uri, d2)
 
-	testDir.add(newMailbox(uri2, nil, nil))
+	add(testDir, newMailbox(uri2, nil, nil))
 	fmt.Printf("test: Add(%v) -> : ok\n", uri2)
 	fmt.Printf("test: Count() -> : %v\n", testDir.Count())
-	d2 = get(uri2, testDir)
+	d2, _ = get(testDir, uri2)
 	fmt.Printf("test: get(%v) -> : %v\n", uri2, d2)
 
 	fmt.Printf("test: List() -> : %v\n", testDir.List())
@@ -71,7 +65,7 @@ func Example_SendError() {
 
 	fmt.Printf("test: SendCmd(%v) -> : %v\n", uri, testDir.SendCmd(core.Message{To: uri}))
 
-	testDir.add(newMailbox(uri, nil, nil))
+	add(testDir, newMailbox(uri, nil, nil))
 	fmt.Printf("test: Add(%v) -> : ok\n", uri)
 	fmt.Printf("test: SendCmd(%v) -> : %v\n", uri, testDir.SendCmd(core.Message{To: uri}))
 
@@ -89,9 +83,9 @@ func Example_Send() {
 	c := make(chan core.Message, 16)
 	empty(testDir)
 
-	testDir.add(newMailbox(uri1, c, nil))
-	testDir.add(newMailbox(uri2, c, nil))
-	testDir.add(newMailbox(uri3, c, nil))
+	add(testDir, newMailbox(uri1, c, nil))
+	add(testDir, newMailbox(uri2, c, nil))
+	add(testDir, newMailbox(uri3, c, nil))
 
 	testDir.SendCmd(core.Message{To: uri1, From: PkgPath, Event: core.StartupEvent})
 	testDir.SendCmd(core.Message{To: uri2, From: PkgPath, Event: core.StartupEvent})
