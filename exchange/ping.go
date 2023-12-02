@@ -18,7 +18,7 @@ const (
 	pingLocation = PkgPath + "/Ping"
 )
 
-// Ping - templated function to "ping" a startup
+// Ping - templated function to "ping" a resource
 func Ping[E runtime.ErrorHandler](ctx context.Context, uri string) (status runtime.Status) {
 	return ping[E](exchDir, ctx, uri)
 }

@@ -3,6 +3,7 @@ package mux
 import (
 	"fmt"
 	"github.com/advanced-go/core/http2"
+	"github.com/advanced-go/core/runtime"
 	"net/http"
 )
 
@@ -24,5 +25,17 @@ func Example_HttpHandler() {
 
 	//Output:
 	//test: HttpHandler() -> 504
+
+}
+
+func Example_processPing() {
+	w := http2.NewRecorder()
+	r, _ := http.NewRequest("", "github.com/advanced-go/example-domain/activity:ping", nil)
+
+	nid, rsc, ok := http2.UprootUrn(r.URL.Path)
+	processPing[runtime.TestError](w, nid)
+	fmt.Printf("test: processPing() -> [nid:%v] [nss:%v] [ok:%v] [status:%v]\n", nid, rsc, ok, w.Result().StatusCode)
+
+	//Output:
 
 }
