@@ -34,13 +34,11 @@ type directory struct {
 // NewDirectory - create a new directory
 func NewDirectory() Directory {
 	e := new(directory)
-	e.m = new(sync.Map) //make(map[string]*Mailbox)
+	e.m = new(sync.Map)
 	return e
 }
 
 func (d *directory) Count() int {
-	//d.mu.RLock()
-	//defer d.mu.RUnlock()
 	count := 0
 	d.m.Range(func(key, value any) bool {
 		count++
@@ -66,17 +64,6 @@ func (d *directory) SendCtrl(msg core.Message) runtime.Status {
 	if !status.OK() {
 		return status.AddLocation(dirSendCtrlLocation)
 	}
-	/*
-		v, ok := d.m.Load(msg.To)
-		if !ok {
-			return runtime.NewStatusError(runtime.StatusInvalidArgument, dirSendCtrlLocation, errors.New(fmt.Sprintf("entry not found: [%v]", msg.To)))
-		}
-		mbox, ok2 := v.(*Mailbox)
-		if !ok2 {
-			return runtime.NewStatusError(runtime.StatusInvalidContent, dirSendCtrlLocation, errors.New(fmt.Sprintf("invalid Mailbox type: [%v]", msg.To)))
-		}
-
-	*/
 	if mbox.ctrl == nil {
 		return runtime.NewStatusError(runtime.StatusInvalidContent, dirSendCtrlLocation, errors.New(fmt.Sprintf("entry control channel is nil: [%v]", msg.To)))
 	}
@@ -89,16 +76,6 @@ func (d *directory) SendData(msg core.Message) runtime.Status {
 	if !status.OK() {
 		return status.AddLocation(dirSendDataLocation)
 	}
-	/*
-		v, ok := d.m.Load(msg.To)
-		if !ok {
-			return runtime.NewStatusError(runtime.StatusInvalidArgument, dirSendDataLocation, errors.New(fmt.Sprintf("entry not found: [%v]", msg.To)))
-		}
-		mbox, ok2 := v.(*Mailbox)
-		if !ok2 {
-			return runtime.NewStatusError(runtime.StatusInvalidContent, dirSendDataLocation, errors.New(fmt.Sprintf("invalid Mailbox type: [%v]", msg.To)))
-		}
-	*/
 	if mbox.data == nil {
 		return runtime.NewStatusError(runtime.StatusInvalidContent, dirSendDataLocation, errors.New(fmt.Sprintf("entry data channel is nil: [%v]", msg.To)))
 	}
@@ -120,14 +97,6 @@ func (d *directory) add(m *Mailbox) runtime.Status {
 	if m == nil {
 		return runtime.NewStatusError(runtime.StatusInvalidArgument, dirAddLocation, errors.New(fmt.Sprintf("invalid argument: mailbox is nil")))
 	}
-	/*
-		if d, ok := any(dir).(*directory); ok {
-			//d.mu.Lock()
-			//defer d.mu.Unlock()
-			d.m.Store(m.uri, m)
-		}
-
-	*/
 	d.m.Store(m.uri, m)
 	return runtime.StatusOK()
 }
