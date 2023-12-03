@@ -31,8 +31,8 @@ type Message struct {
 	ReplyTo   MessageHandler
 }
 
-// ReplyTo - function used by message recipient to reply with a runtime.Status
-func ReplyTo(msg Message, status runtime.Status) {
+// SendReply - function used by message recipient to reply with a runtime.Status
+func SendReply(msg Message, status runtime.Status) {
 	if msg.ReplyTo == nil {
 		return
 	}
