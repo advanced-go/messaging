@@ -13,19 +13,19 @@ func Example_Add() {
 	testDir := any(NewDirectory()).(*directory)
 
 	fmt.Printf("test: Count() -> : %v\n", testDir.Count())
-	d2, _ := get(testDir, uri)
+	d2, _ := testDir.get(uri)
 	fmt.Printf("test: get(%v) -> : %v\n", uri, d2)
 
-	add(testDir, newMailbox(uri, nil, nil))
+	testDir.add(newMailbox(uri, nil, nil))
 	fmt.Printf("test: Add(%v) -> : ok\n", uri)
 	fmt.Printf("test: Count() -> : %v\n", testDir.Count())
-	d2, _ = get(testDir, uri)
+	d2, _ = testDir.get(uri)
 	fmt.Printf("test: get(%v) -> : %v\n", uri, d2)
 
-	add(testDir, newMailbox(uri2, nil, nil))
+	testDir.add(newMailbox(uri2, nil, nil))
 	fmt.Printf("test: Add(%v) -> : ok\n", uri2)
 	fmt.Printf("test: Count() -> : %v\n", testDir.Count())
-	d2, _ = get(testDir, uri2)
+	d2, _ = testDir.get(uri2)
 	fmt.Printf("test: get(%v) -> : %v\n", uri2, d2)
 
 	fmt.Printf("test: List() -> : %v\n", testDir.List())
@@ -49,12 +49,12 @@ func Example_SendError() {
 
 	fmt.Printf("test: SendCtrl(%v) -> : %v\n", uri, testDir.SendCtrl(core.Message{To: uri}))
 
-	add(testDir, newMailbox(uri, nil, nil))
+	testDir.add(newMailbox(uri, nil, nil))
 	fmt.Printf("test: Add(%v) -> : ok\n", uri)
 	fmt.Printf("test: SendCtrl(%v) -> : %v\n", uri, testDir.SendCtrl(core.Message{To: uri}))
 
 	//Output:
-	//test: SendCtrl(urn:test) -> : Invalid Argument [entry not found: [urn:test]]
+	//test: SendCtrl(urn:test) -> : Not Found [invalid URI: directory mailbox not found [urn:test]]
 	//test: Add(urn:test) -> : ok
 	//test: SendCtrl(urn:test) -> : Invalid Content [entry control channel is nil: [urn:test]]
 
@@ -66,11 +66,10 @@ func Example_Send() {
 	uri3 := "urn:test-3"
 	c := make(chan core.Message, 16)
 	testDir := any(NewDirectory()).(*directory)
-	//empty(testDir)
 
-	add(testDir, newMailbox(uri1, c, nil))
-	add(testDir, newMailbox(uri2, c, nil))
-	add(testDir, newMailbox(uri3, c, nil))
+	testDir.add(newMailbox(uri1, c, nil))
+	testDir.add(newMailbox(uri2, c, nil))
+	testDir.add(newMailbox(uri3, c, nil))
 
 	testDir.SendCtrl(core.Message{To: uri1, From: PkgPath, Event: core.StartupEvent})
 	testDir.SendCtrl(core.Message{To: uri2, From: PkgPath, Event: core.StartupEvent})
@@ -85,5 +84,21 @@ func Example_Send() {
 
 	//Output:
 	//test: <- c -> : [urn:test-1] [urn:test-2] [urn:test-3]
+
+}
+
+func Example_ListCount() {
+	testDir := any(NewDirectory()).(*directory)
+
+	testDir.add(newMailbox("test:uri1", nil, nil))
+	testDir.add(newMailbox("test:uri2", nil, nil))
+
+	fmt.Printf("test: Count() -> : %v\n", testDir.Count())
+
+	fmt.Printf("test: List() -> : %v\n", testDir.List())
+
+	//Output:
+	//test: Count() -> : 2
+	//test: List() -> : [test:uri1 test:uri2]
 
 }

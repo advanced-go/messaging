@@ -2,30 +2,34 @@ package exchange
 
 import (
 	"errors"
-	"fmt"
 	"github.com/advanced-go/core/runtime"
 	"github.com/advanced-go/messaging/core"
 )
 
 const (
-	sendLoc = PkgPath + ":Send"
+	sendLoc     = PkgPath + ":Send"
+	registerLoc = PkgPath + ":Register"
 )
 
 var exchDir = NewDirectory()
 
 // Register - add a mailbox to the exchange directory
-func Register(m *Mailbox) error {
+func Register(m *Mailbox) runtime.Status {
 	if m == nil {
-		return errors.New(fmt.Sprintf("invalid argument: mailbox is nil"))
+		return runtime.NewStatusError(runtime.StatusInvalidArgument, registerLoc, errors.New("invalid argument: mailbox is nil"))
 	}
 	if len(m.uri) == 0 {
-		return errors.New(fmt.Sprintf("invalid argument: uri is empty"))
+		return runtime.NewStatusError(runtime.StatusInvalidArgument, registerLoc, errors.New("invalid argument: mailbox uri is empty"))
 	}
 	if m.ctrl == nil {
-		return errors.New(fmt.Sprintf("invalid argument: command channel is nil"))
+		return runtime.NewStatusError(runtime.StatusInvalidArgument, registerLoc, errors.New("invalid argument: mailbox command channel is nil"))
 	}
-	add(exchDir, m)
-	return nil
+	d, ok := any(exchDir).(*directory)
+	if !ok {
+		return runtime.NewStatusError(runtime.StatusInvalidContent, registerLoc, errors.New("invalid argument: Directory type is not *directory"))
+	}
+	d.add(m)
+	return runtime.StatusOK()
 }
 
 // SendCtrl - send to command channel

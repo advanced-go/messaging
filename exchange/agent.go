@@ -3,7 +3,12 @@ package exchange
 import (
 	"errors"
 	"fmt"
+	"github.com/advanced-go/core/runtime"
 	"github.com/advanced-go/messaging/core"
+)
+
+const (
+	newAgentLocation = PkgPath + ":NewAgent"
 )
 
 type Agent interface {
@@ -16,23 +21,31 @@ type agentCfg struct {
 	dataHandler core.MessageHandler
 }
 
-func NewAgent(uri string, ctrlHandler, dataHandler core.MessageHandler) (Agent, error) {
-	return newAgent(exchDir, uri, ctrlHandler, dataHandler)
+func NewAgent(uri string, ctrlHandler, dataHandler core.MessageHandler) (Agent, runtime.Status) {
+	dir := any(exchDir).(*directory)
+	if dir == nil {
+		return nil, runtime.NewStatusError(runtime.StatusInvalidContent, newAgentLocation, errors.New(fmt.Sprintf("Directory is not of *directory type")))
+	}
+	return newAgent(dir, uri, ctrlHandler, dataHandler)
 }
 
-func newAgent(dir Directory, uri string, ctrlHandler, dataHandler core.MessageHandler) (Agent, error) {
+func newAgent(dir *directory, uri string, ctrlHandler, dataHandler core.MessageHandler) (Agent, runtime.Status) {
 	if len(uri) == 0 {
-		return nil, errors.New(fmt.Sprintf("invalid argument: uri is empty"))
+		return nil, runtime.NewStatusError(runtime.StatusInvalidArgument, newAgentLocation, errors.New("invalid argument: uri is empty"))
 	}
-	m, err := get(dir, uri)
-	if err != nil {
-		return nil, err
+	//d := any(dir).(*directory)
+	//if d == nil {
+	//	return nil, runtime.NewStatusError(runtime.StatusInvalidContent, newAgentLocation, errors.New(fmt.Sprintf("Directory is not of *directory type")))
+	//}
+	m, status := dir.get(uri)
+	if !status.OK() {
+		return nil, status
 	}
 	cfg := new(agentCfg)
 	cfg.m = m
 	cfg.ctrlHandler = ctrlHandler
 	cfg.dataHandler = dataHandler
-	return cfg, nil
+	return cfg, runtime.StatusOK()
 }
 
 func (a *agentCfg) Run() {

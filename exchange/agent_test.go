@@ -19,17 +19,19 @@ func Example_NewAgent() {
 	agentDir := any(NewDirectory()).(*directory)
 	uri := "github.com/advanced-go/example-domain/activity"
 	c := make(chan core.Message, 16)
-	err := add(agentDir, newMailbox(uri, c, nil))
-	if err != nil {
-		fmt.Printf("test: add() -> [err:%v]\n", err)
+	status := agentDir.add(newMailbox(uri, c, nil))
+	if !status.OK() {
+		fmt.Printf("test: add() -> [status:%v]\n", status)
 	}
-	a, err1 := newAgent(agentDir, uri, newAgentCtrlHandler, nil)
-	if err1 != nil {
-		fmt.Printf("test: add() -> [err:%v]\n", err1)
+	a, status1 := newAgent(agentDir, uri, newAgentCtrlHandler, nil)
+	if !status1.OK() {
+		fmt.Printf("test: newAgent() -> [status:%v]\n", status1)
 	}
 	// 1 -10 Nanoseconds works for a direct send to a channel, sending via a directory needs a longer sleep time
 	//d := time.Nanosecond * 10
-	d := time.Nanosecond * 50
+	// Needed time.Nanoseconds * 50 for directory send with mutex
+	// Needed time.Nanoseconds * 1 for directory send via sync.Map
+	d := time.Nanosecond * 1
 	a.Run()
 	agentDir.SendCtrl(core.Message{To: uri, From: "", Event: core.StartupEvent})
 	//c <- core.Message{To: "", From: "", Event: core.StartupEvent, RelatesTo: "", Status: nil, Content: nil, ReplyTo: nil}
@@ -79,7 +81,7 @@ func _Example_NewAgent_Shutdown() {
 	agentDir := any(NewDirectory()).(*directory)
 	uri := "github.com/advanced-go/example-domain/activity"
 	c := make(chan core.Message, 16)
-	err := add(agentDir, newMailbox(uri, c, nil))
+	err := agentDir.add(newMailbox(uri, c, nil))
 	if err != nil {
 		fmt.Printf("test: add() -> [err:%v]\n", err)
 	}
