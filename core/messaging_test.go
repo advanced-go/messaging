@@ -11,5 +11,6 @@ func Example_ReplyTo() {
 	msg.ReplyTo(msg)
 
 	//Output:
+	//startup
 
 }

@@ -67,7 +67,7 @@ func createToSend(directory Directory, cm core.Map, fn core.MessageHandler) core
 
 func sendMessages(directory Directory, msgs core.MessageMap) {
 	for k := range msgs {
-		directory.SendCmd(msgs[k])
+		directory.SendCtrl(msgs[k])
 	}
 }
 

@@ -8,8 +8,6 @@ import (
 	"time"
 )
 
-var pingDir = any(NewDirectory()).(*directory)
-
 func ExamplePing() {
 	uri1 := "urn:ping:good"
 	uri2 := "urn:ping:bad"
@@ -17,7 +15,7 @@ func ExamplePing() {
 	uri4 := "urn:ping:delay"
 
 	start = time.Now()
-	empty(pingDir)
+	pingDir := any(NewDirectory()).(*directory)
 
 	c := make(chan core.Message, 16)
 	add(pingDir, newMailbox(uri1, c, nil))

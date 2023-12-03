@@ -6,27 +6,11 @@ import (
 	"time"
 )
 
-var testDir = any(NewDirectory()).(*directory)
-
-func empty(d *directory) {
-	d.mu.RLock()
-	defer d.mu.RUnlock()
-	for key, e := range d.m {
-		if e.ctrl != nil {
-			close(e.ctrl)
-		}
-		if e.data != nil {
-			close(e.data)
-		}
-		delete(d.m, key)
-	}
-}
-
 func Example_Add() {
 	uri := "urn:test"
 	uri2 := "urn:test:two"
 
-	empty(testDir)
+	testDir := any(NewDirectory()).(*directory)
 
 	fmt.Printf("test: Count() -> : %v\n", testDir.Count())
 	d2, _ := get(testDir, uri)
@@ -61,18 +45,18 @@ func Example_Add() {
 
 func Example_SendError() {
 	uri := "urn:test"
-	empty(testDir)
+	testDir := any(NewDirectory()).(*directory)
 
-	fmt.Printf("test: SendCmd(%v) -> : %v\n", uri, testDir.SendCmd(core.Message{To: uri}))
+	fmt.Printf("test: SendCtrl(%v) -> : %v\n", uri, testDir.SendCtrl(core.Message{To: uri}))
 
 	add(testDir, newMailbox(uri, nil, nil))
 	fmt.Printf("test: Add(%v) -> : ok\n", uri)
-	fmt.Printf("test: SendCmd(%v) -> : %v\n", uri, testDir.SendCmd(core.Message{To: uri}))
+	fmt.Printf("test: SendCtrl(%v) -> : %v\n", uri, testDir.SendCtrl(core.Message{To: uri}))
 
 	//Output:
-	//test: SendCmd(urn:test) -> : Invalid Argument [entry not found: [urn:test]]
+	//test: SendCtrl(urn:test) -> : Invalid Argument [entry not found: [urn:test]]
 	//test: Add(urn:test) -> : ok
-	//test: SendCmd(urn:test) -> : Invalid Content [entry command channel is nil: [urn:test]]
+	//test: SendCtrl(urn:test) -> : Invalid Content [entry control channel is nil: [urn:test]]
 
 }
 
@@ -81,15 +65,16 @@ func Example_Send() {
 	uri2 := "urn:test-2"
 	uri3 := "urn:test-3"
 	c := make(chan core.Message, 16)
-	empty(testDir)
+	testDir := any(NewDirectory()).(*directory)
+	//empty(testDir)
 
 	add(testDir, newMailbox(uri1, c, nil))
 	add(testDir, newMailbox(uri2, c, nil))
 	add(testDir, newMailbox(uri3, c, nil))
 
-	testDir.SendCmd(core.Message{To: uri1, From: PkgPath, Event: core.StartupEvent})
-	testDir.SendCmd(core.Message{To: uri2, From: PkgPath, Event: core.StartupEvent})
-	testDir.SendCmd(core.Message{To: uri3, From: PkgPath, Event: core.StartupEvent})
+	testDir.SendCtrl(core.Message{To: uri1, From: PkgPath, Event: core.StartupEvent})
+	testDir.SendCtrl(core.Message{To: uri2, From: PkgPath, Event: core.StartupEvent})
+	testDir.SendCtrl(core.Message{To: uri3, From: PkgPath, Event: core.StartupEvent})
 
 	time.Sleep(time.Second * 1)
 	resp1 := <-c

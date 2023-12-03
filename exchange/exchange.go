@@ -28,9 +28,9 @@ func Register(m *Mailbox) error {
 	return nil
 }
 
-// SendCmd - send to command channel
-func SendCmd(msg core.Message) runtime.Status {
-	status := exchDir.SendCmd(msg)
+// SendCtrl - send to command channel
+func SendCtrl(msg core.Message) runtime.Status {
+	status := exchDir.SendCtrl(msg)
 	if !status.OK() {
 		status.AddLocation(sendLoc)
 	}

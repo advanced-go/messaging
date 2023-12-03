@@ -25,7 +25,7 @@ type Message struct {
 	To        string
 	From      string
 	Event     string
-	RelatesTo map[string]string
+	RelatesTo string
 	Status    runtime.Status
 	Content   []any
 	ReplyTo   MessageHandler

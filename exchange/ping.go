@@ -32,7 +32,7 @@ func ping[E runtime.ErrorHandler](directory Directory, ctx context.Context, uri 
 	}
 	cache := core.NewMessageCache()
 	msg := core.Message{To: uri, From: PkgPath, Event: core.PingEvent, Status: nil, ReplyTo: core.NewMessageCacheHandler(cache)}
-	status = directory.SendCmd(msg)
+	status = directory.SendCtrl(msg)
 	if !status.OK() {
 		return e.Handle(status, runtime.RequestId(ctx), pingLocation)
 	}

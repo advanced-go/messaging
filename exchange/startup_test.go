@@ -12,21 +12,20 @@ var credFn core.Credentials = func() (string, string, error) {
 	return "", "", nil
 }
 
-func testRegister(uri string, cmd, data chan core.Message) error {
-	add(startupDir, newMailbox(uri, cmd, data))
+func testRegister(dir *directory, uri string, cmd, data chan core.Message) error {
+	add(dir, newMailbox(uri, cmd, data))
 	return nil
 }
 
 var start time.Time
 
-var startupDir = any(NewDirectory()).(*directory)
-
 func ExampleCreateToSend() {
 	none := "startup/none"
 	one := "startup/one"
 
-	testRegister(none, nil, nil)
-	testRegister(one, nil, nil)
+	startupDir := any(NewDirectory()).(*directory)
+	testRegister(startupDir, none, nil, nil)
+	testRegister(startupDir, one, nil, nil)
 
 	m := createToSend(startupDir, nil, nil)
 	msg := m[none]
@@ -48,19 +47,19 @@ func ExampleStartup_Success() {
 	uri2 := "github.com/startup/bad"
 	uri3 := "github.com/startup/depends"
 
+	startupDir := any(NewDirectory()).(*directory)
 	start = time.Now()
-	empty(startupDir)
 
 	c := make(chan core.Message, 16)
-	testRegister(uri1, c, nil)
+	testRegister(startupDir, uri1, c, nil)
 	go startupGood(c)
 
 	c = make(chan core.Message, 16)
-	testRegister(uri2, c, nil)
+	testRegister(startupDir, uri2, c, nil)
 	go startupBad(c)
 
 	c = make(chan core.Message, 16)
-	testRegister(uri3, c, nil)
+	testRegister(startupDir, uri3, c, nil)
 	go startupDepends(c, nil)
 
 	status := startup[runtime.TestError](startupDir, time.Second*2, nil)
@@ -79,20 +78,20 @@ func ExampleStartup_Failure() {
 	uri1 := "github.com/startup/good"
 	uri2 := "github.com/startup/bad"
 	uri3 := "github.com/startup/depends"
+	startupDir := any(NewDirectory()).(*directory)
 
 	start = time.Now()
-	empty(startupDir)
 
 	c := make(chan core.Message, 16)
-	testRegister(uri1, c, nil)
+	testRegister(startupDir, uri1, c, nil)
 	go startupGood(c)
 
 	c = make(chan core.Message, 16)
-	testRegister(uri2, c, nil)
+	testRegister(startupDir, uri2, c, nil)
 	go startupBad(c)
 
 	c = make(chan core.Message, 16)
-	testRegister(uri3, c, nil)
+	testRegister(startupDir, uri3, c, nil)
 	go startupDepends(c, errors.New("startup failure error message"))
 
 	status := startup[runtime.TestError](startupDir, time.Second*2, nil)
