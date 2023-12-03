@@ -94,7 +94,7 @@ func (d *directory) SendCtrl(msg core.Message) runtime.Status {
 func (d *directory) SendData(msg core.Message) runtime.Status {
 	v, ok := d.m.Load(msg.To)
 	if !ok {
-		runtime.NewStatusError(runtime.StatusInvalidArgument, dirSendDataLocation, errors.New(fmt.Sprintf("entry not found: [%v]", msg.To)))
+		return runtime.NewStatusError(runtime.StatusInvalidArgument, dirSendDataLocation, errors.New(fmt.Sprintf("entry not found: [%v]", msg.To)))
 	}
 	mbox, ok2 := v.(*Mailbox)
 	if !ok2 {
