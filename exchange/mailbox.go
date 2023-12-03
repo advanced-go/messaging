@@ -2,8 +2,12 @@ package exchange
 
 import (
 	"errors"
-	"fmt"
+	"github.com/advanced-go/core/runtime"
 	"github.com/advanced-go/messaging/core"
+)
+
+const (
+	mailboxLoc = PkgPath + ":NewMailbox"
 )
 
 type Mailbox struct {
@@ -12,9 +16,9 @@ type Mailbox struct {
 	data chan core.Message
 }
 
-func NewMailbox(uri string, data bool) (*Mailbox, error) {
+func NewMailbox(uri string, data bool) (*Mailbox, runtime.Status) {
 	if len(uri) == 0 {
-		return nil, errors.New(fmt.Sprintf("invalid argument: uri is empty"))
+		return nil, runtime.NewStatusError(runtime.StatusInvalidArgument, mailboxLoc, errors.New("invalid argument: uri is empty"))
 	}
 	m := new(Mailbox)
 	m.uri = uri
