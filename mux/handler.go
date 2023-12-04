@@ -1,6 +1,7 @@
 package mux
 
 import (
+	"fmt"
 	"github.com/advanced-go/core/http2"
 	"github.com/advanced-go/core/runtime"
 	"github.com/advanced-go/messaging/exchange"
@@ -55,5 +56,6 @@ func HttpHandler(w http.ResponseWriter, r *http.Request) {
 
 func processPing[E runtime.ErrorHandler](w http.ResponseWriter, nid string) {
 	status := exchange.Ping[E](nil, nid)
+	status.SetContent(fmt.Sprintf("Ping resource: %v", nid), false)
 	http2.WriteResponse[E](w, nil, status, nil)
 }
