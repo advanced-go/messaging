@@ -75,6 +75,7 @@ func (r *messageCache) Add(msg Message) error {
 	defer r.mu.Unlock()
 	if _, ok := r.m[msg.From]; !ok {
 		r.m[msg.From] = msg
+		return nil
 	}
 	return errors.New(fmt.Sprintf("invalid argument: message found [%v]", msg.From))
 }
