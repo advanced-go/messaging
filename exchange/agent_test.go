@@ -10,6 +10,10 @@ func newAgentCtrlHandler(msg core.Message) {
 	fmt.Printf(fmt.Sprintf("test: NewAgent_CtrlHandler() -> %v\n", msg.Event))
 }
 
+func newAgentStatusHandler(msg core.Message) {
+	fmt.Printf(fmt.Sprintf("test: NewAgent_StatusHandler() -> [%v] [status:%v]\n", msg.Event, msg.Status))
+}
+
 func Example_NewAgent() {
 	defer func() {
 		if r := recover(); r != nil {
@@ -23,7 +27,7 @@ func Example_NewAgent() {
 	if !status.OK() {
 		fmt.Printf("test: add() -> [status:%v]\n", status)
 	}
-	a, status1 := newAgent(agentDir, uri, newAgentCtrlHandler, nil)
+	a, status1 := newAgent(agentDir, uri, newAgentCtrlHandler, nil, newAgentStatusHandler)
 	if !status1.OK() {
 		fmt.Printf("test: newAgent() -> [status:%v]\n", status1)
 	}
@@ -57,9 +61,12 @@ func Example_NewAgent() {
 
 	//Output:
 	//test: NewAgent_CtrlHandler() -> event:startup
+	//test: NewAgent_StatusHandler() -> [event:pause] [status:OK]
+	//test: NewAgent_StatusHandler() -> [event:resume] [status:OK]
 	//test: NewAgent_CtrlHandler() -> event:ping
 	//test: NewAgent_CtrlHandler() -> event:reconfigure
 	//test: NewAgent_CtrlHandler() -> event:shutdown
+	//test: NewAgent_StatusHandler() -> [event:shutdown] [status:OK]
 	//test: NewAgent() -> [recovered:send on closed channel]
 
 }
@@ -85,7 +92,7 @@ func Example_NewAgent_Shutdown() {
 	if !status.OK() {
 		fmt.Printf("test: add() -> [status:%v]\n", status)
 	}
-	a, status1 := newAgent(agentDir, uri, newAgentShutdownCtrlHandler, newAgentShutdownDataHandler)
+	a, status1 := newAgent(agentDir, uri, newAgentShutdownCtrlHandler, newAgentShutdownDataHandler, nil)
 	if !status1.OK() {
 		fmt.Printf("test: add() -> [status:%v]\n", status)
 	}

@@ -23,7 +23,6 @@ type Directory interface {
 	List() []string
 	SendCtrl(msg core.Message) runtime.Status
 	SendData(msg core.Message) runtime.Status
-	Shutdown()
 }
 
 type directory struct {
@@ -83,7 +82,7 @@ func (d *directory) SendData(msg core.Message) runtime.Status {
 	return runtime.StatusOK()
 }
 
-func (d *directory) Shutdown() {
+func (d *directory) shutdown(uri string) runtime.Status {
 	//d.mu.RLock()
 	//defer d.mu.RUnlock()
 	//for _, e := range d.m {
@@ -91,6 +90,18 @@ func (d *directory) Shutdown() {
 	//		e.ctrl <- core.Message{To: e.uri, Event: core.ShutdownEvent}
 	//	}
 	//}
+	m, status := d.get(uri)
+	if !status.OK() {
+		return status
+	}
+	if m.ctrl != nil {
+		close(m.ctrl)
+	}
+	if m.data != nil {
+		close(m.data)
+	}
+	d.m.Delete(uri)
+	return runtime.StatusOK()
 }
 
 func (d *directory) add(m *Mailbox) runtime.Status {

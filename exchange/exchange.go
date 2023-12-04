@@ -52,5 +52,5 @@ func SendData(msg core.Message) runtime.Status {
 
 // Shutdown - send a shutdown message to all directory entries
 func Shutdown() {
-	exchDir.Shutdown()
+	//exchDir.Shutdown()
 }

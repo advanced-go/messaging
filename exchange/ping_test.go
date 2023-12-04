@@ -70,7 +70,7 @@ func pingBad(c chan core.Message) {
 			if !open {
 				return
 			}
-			time.Sleep(time.Second * 4)
+			time.Sleep(maxWait + time.Second)
 			core.SendReply(msg, runtime.NewStatusOK().SetDuration(time.Since(start)))
 		default:
 		}

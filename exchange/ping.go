@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	maxWait = time.Second * 2
+	maxWait = time.Second * 3
 )
 
 const (
