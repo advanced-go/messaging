@@ -1,14 +1,4 @@
-github.com/advanced-go/core v0.0.0-20231124124426-65f72fe3ee17 h1:vn2la0F7lAfagQdUP1t9jP+maa++RFHuCCGiU3NIHyw=
-github.com/advanced-go/core v0.0.0-20231124124426-65f72fe3ee17/go.mod h1:p58Ll2RUpEOeraoKxazyJpiPkWZelINYxxkcwCtwjUE=
-github.com/advanced-go/core v0.0.0-20231126150800-a9424fe64205 h1:vrpaTmUNgKzc83q26wy8pwxC2/iiw5B65F2vWVmyH5o=
-github.com/advanced-go/core v0.0.0-20231126150800-a9424fe64205/go.mod h1:p58Ll2RUpEOeraoKxazyJpiPkWZelINYxxkcwCtwjUE=
-github.com/advanced-go/core v0.0.0-20231129123834-2c7d2c393446 h1:tYyMEstmuTqLh8bX9nlTkOOg+QFVhhKMeSvJpS30ByU=
-github.com/advanced-go/core v0.0.0-20231129123834-2c7d2c393446/go.mod h1:p58Ll2RUpEOeraoKxazyJpiPkWZelINYxxkcwCtwjUE=
-github.com/advanced-go/core v0.0.0-20231201125135-64296b7c359f h1:CoZXQaoOL+R9jwhHwWpRyoXJEQ2ZHXB1MTAz7X6DP4g=
-github.com/advanced-go/core v0.0.0-20231201125135-64296b7c359f/go.mod h1:p58Ll2RUpEOeraoKxazyJpiPkWZelINYxxkcwCtwjUE=
-github.com/advanced-go/core v0.0.0-20231201172302-e33b1ded6bbf h1:o4B0njCe/4apACayoz/3dF49aqkP7dwZ90onOmUinjQ=
-github.com/advanced-go/core v0.0.0-20231201172302-e33b1ded6bbf/go.mod h1:p58Ll2RUpEOeraoKxazyJpiPkWZelINYxxkcwCtwjUE=
-github.com/advanced-go/core v0.0.0-20231202122929-ed55cbe1d78c h1:LDT3YLhca7FO0L8SEgr123H/GAvFUtsyAk9FtE/CcfI=
-github.com/advanced-go/core v0.0.0-20231202122929-ed55cbe1d78c/go.mod h1:p58Ll2RUpEOeraoKxazyJpiPkWZelINYxxkcwCtwjUE=
+github.com/advanced-go/core v0.0.0-20231204170332-5286012c385e h1:3OGvr2XO9wOplsp7Xpswt4cLfzYMhw9Ez8u1bw0XNOU=
+github.com/advanced-go/core v0.0.0-20231204170332-5286012c385e/go.mod h1:p58Ll2RUpEOeraoKxazyJpiPkWZelINYxxkcwCtwjUE=
 github.com/google/uuid v1.4.0 h1:MtMxsa51/r9yyhkyLsVeVt0B+BGQZzpQiTQ4eHZ8bc4=
 github.com/google/uuid v1.4.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=

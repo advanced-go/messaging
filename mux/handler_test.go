@@ -39,7 +39,7 @@ func Example_processPing() {
 		fmt.Printf("test: processPing() -> [status:%v]\n", status)
 	}
 	nid, rsc, ok := http2.UprootUrn(r.URL.Path)
-	ProcessPing[runtime.TestError](w, nid)
+	ProcessPing[runtime.Output](w, nid)
 	buf, status1 := io2.ReadAll(w.Result().Body)
 	if !status1.OK() {
 		fmt.Printf("test: ReadAll() -> [status:%v]\n", status1)
@@ -47,9 +47,6 @@ func Example_processPing() {
 	fmt.Printf("test: processPing() -> [nid:%v] [nss:%v] [ok:%v] [status:%v] [content:%v]\n", nid, rsc, ok, w.Result().StatusCode, string(buf))
 
 	//Output:
-
-}
-
-func Example_ToTests() {
+	//test: processPing() -> [nid:github.com/advanced-go/example-domain/activity] [nss:ping] [ok:true] [status:504] [content:]
 
 }

@@ -62,7 +62,7 @@ func ExampleStartup_Success() {
 	testRegister(startupDir, uri3, c, nil)
 	go startupDepends(c, nil)
 
-	status := startup[runtime.TestError](startupDir, time.Second*2, nil)
+	status := startup[runtime.Output](startupDir, time.Second*2, nil)
 
 	fmt.Printf("test: Startup() -> [%v]\n", status)
 
@@ -94,7 +94,7 @@ func ExampleStartup_Failure() {
 	testRegister(startupDir, uri3, c, nil)
 	go startupDepends(c, errors.New("startup failure error message"))
 
-	status := startup[runtime.TestError](startupDir, time.Second*2, nil)
+	status := startup[runtime.Output](startupDir, time.Second*2, nil)
 
 	fmt.Printf("test: Startup() -> [%v]\n", status)
 

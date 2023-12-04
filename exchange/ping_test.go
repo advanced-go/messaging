@@ -20,26 +20,26 @@ func ExamplePing() {
 	c := make(chan core.Message, 16)
 	pingDir.add(newMailbox(uri1, c, nil))
 	go pingGood(c)
-	status := ping[runtime.TestError](pingDir, nil, uri1)
+	status := ping[runtime.Output](pingDir, nil, uri1)
 	duration := status.Duration()
 	fmt.Printf("test: Ping(good) -> [%v] [duration:%v]\n", status, duration)
 
 	c = make(chan core.Message, 16)
 	pingDir.add(newMailbox(uri2, c, nil))
 	go pingBad(c)
-	status = ping[runtime.TestError](pingDir, nil, uri2)
+	status = ping[runtime.Output](pingDir, nil, uri2)
 	fmt.Printf("test: Ping(bad) -> [%v] [duration:%v]\n", status, duration)
 
 	c = make(chan core.Message, 16)
 	pingDir.add(newMailbox(uri3, c, nil))
 	go pingError(c, errors.New("ping depends error message"))
-	status = ping[runtime.TestError](pingDir, nil, uri3)
+	status = ping[runtime.Output](pingDir, nil, uri3)
 	fmt.Printf("test: Ping(error) -> [%v] [duration:%v]\n", status, duration)
 
 	c = make(chan core.Message, 16)
 	pingDir.add(newMailbox(uri4, c, nil))
 	go pingDelay(c)
-	status = ping[runtime.TestError](pingDir, nil, uri4)
+	status = ping[runtime.Output](pingDir, nil, uri4)
 	fmt.Printf("test: Ping(delay) -> [%v] [duration:%v]\n", status, duration)
 
 	//Output:

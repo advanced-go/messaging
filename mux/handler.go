@@ -46,7 +46,7 @@ func HttpHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		if rsc == PingResource {
-			ProcessPing[runtime.LogError](w, nid)
+			ProcessPing[runtime.Log](w, nid)
 			return
 		}
 		rt.handler(w, r)
