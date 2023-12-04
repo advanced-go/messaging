@@ -78,7 +78,7 @@ func handleErrors[E runtime.ErrorHandler](failures []string, cache core.MessageC
 		if err != nil {
 			continue
 		}
-		if msg.Status != nil {
+		if msg.Status != nil && !msg.Status.OK() {
 			loc := ""
 			if msg.Status.Location() != nil && len(msg.Status.Location()) > 0 {
 				loc = msg.Status.Location()[0]
