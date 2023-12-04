@@ -49,3 +49,7 @@ func Example_processPing() {
 	//Output:
 
 }
+
+func Example_ToTests() {
+
+}
