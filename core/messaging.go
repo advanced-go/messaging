@@ -42,7 +42,7 @@ func SendReply(msg Message, status runtime.Status) {
 		To:        msg.From,
 		From:      msg.To,
 		RelatesTo: msg.RelatesTo,
-		Event:     "",
+		Event:     msg.Event,
 		Status:    status,
 		Content:   nil,
 		ReplyTo:   nil,

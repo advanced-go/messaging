@@ -1,6 +1,9 @@
 package core
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/advanced-go/core/runtime"
+)
 
 func handler(msg Message) {
 	fmt.Printf(msg.Event)
@@ -8,10 +11,10 @@ func handler(msg Message) {
 
 func Example_ReplyTo() {
 	msg := Message{To: "test", Event: "startup", ReplyTo: handler}
-	msg.ReplyTo(msg)
+	SendReply(msg, runtime.StatusOK())
 
 	msg = Message{To: "test", Event: "startup", ReplyTo: nil}
-	msg.ReplyTo(msg)
+	SendReply(msg, runtime.StatusOK())
 
 	//Output:
 	//startup
