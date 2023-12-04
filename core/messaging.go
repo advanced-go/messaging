@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"github.com/advanced-go/core/runtime"
 )
 
@@ -37,18 +38,22 @@ func SendReply(msg Message, status runtime.Status) {
 		return
 	}
 	msg.ReplyTo(Message{
-		To:      msg.From,
-		From:    msg.To,
-		Event:   msg.Event,
-		Status:  status,
-		Content: nil,
-		ReplyTo: nil,
+		To:        msg.From,
+		From:      msg.To,
+		RelatesTo: msg.RelatesTo,
+		Event:     msg.Event,
+		Status:    status,
+		Content:   nil,
+		ReplyTo:   nil,
 	})
 }
 
 // NewMessageCacheHandler - handler to receive messages into a cache.
 func NewMessageCacheHandler(cache MessageCache) MessageHandler {
 	return func(msg Message) {
-		cache.Add(msg)
+		err := cache.Add(msg)
+		if err != nil {
+			fmt.Printf("error on MessageCache.Add() -> [to:%v] [from:%v] [err:%v]\n", msg.To, msg.From, err)
+		}
 	}
 }

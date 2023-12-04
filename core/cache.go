@@ -76,7 +76,7 @@ func (r *messageCache) Add(msg Message) error {
 	if _, ok := r.m[msg.From]; !ok {
 		r.m[msg.From] = msg
 	}
-	return nil
+	return errors.New(fmt.Sprintf("invalid argument: message found [%v]", msg.From))
 }
 
 func (r *messageCache) Get(uri string) (Message, error) {
