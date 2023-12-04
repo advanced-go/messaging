@@ -27,7 +27,7 @@ func startup[E runtime.ErrorHandler](directory Directory, duration time.Duration
 		return runtime.StatusOK()
 	}
 	cache := core.NewMessageCache()
-	toSend := createToSend(directory, content, core.NewMessageCacheHandler(cache))
+	toSend := createToSend(directory, content, core.NewMessageCacheHandler[E](cache))
 	sendMessages(directory, toSend)
 	for wait := time.Duration(float64(duration) * 0.25); duration >= 0; duration -= wait {
 		time.Sleep(wait)

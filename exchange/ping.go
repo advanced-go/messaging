@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	maxWait = time.Second * 4
+	maxWait = time.Second * 2
 )
 
 const (
@@ -31,7 +31,7 @@ func ping[E runtime.ErrorHandler](directory Directory, ctx context.Context, uri 
 			runtime.RequestId(ctx), "")
 	}
 	cache := core.NewMessageCache()
-	msg := core.Message{To: uri, From: PkgPath, Event: core.PingEvent, Status: nil, ReplyTo: core.NewMessageCacheHandler(cache)}
+	msg := core.Message{To: uri, From: PkgPath, Event: core.PingEvent, Status: nil, ReplyTo: core.NewMessageCacheHandler[E](cache)}
 	status = directory.SendCtrl(msg)
 	if !status.OK() {
 		return e.Handle(status, runtime.RequestId(ctx), pingLocation)
@@ -41,7 +41,7 @@ func ping[E runtime.ErrorHandler](directory Directory, ctx context.Context, uri 
 		time.Sleep(wait)
 		result, err1 := cache.Get(uri)
 		if err1 != nil {
-			fmt.Printf("wait: [%v] error: [%v]\n", wait, err1)
+			//fmt.Printf("wait: [%v] error: [%v]\n", wait, err1)
 			continue
 		}
 		if result.Status == nil {

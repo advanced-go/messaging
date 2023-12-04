@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"github.com/advanced-go/core/runtime"
 )
 
@@ -13,6 +12,8 @@ const (
 
 	PauseEvent  = "event:pause"  // disable data channel receive
 	ResumeEvent = "event:resume" // enable data channel receive
+
+	msgHandlerLoc = "github.com/advanced-go/messaging/core:MessageCacheHandler"
 )
 
 // MessageMap - map of messages
@@ -49,11 +50,13 @@ func SendReply(msg Message, status runtime.Status) {
 }
 
 // NewMessageCacheHandler - handler to receive messages into a cache.
-func NewMessageCacheHandler(cache MessageCache) MessageHandler {
+func NewMessageCacheHandler[E runtime.ErrorHandler](cache MessageCache) MessageHandler {
 	return func(msg Message) {
 		err := cache.Add(msg)
 		if err != nil {
-			fmt.Printf("error on MessageCache.Add() -> [to:%v] [from:%v] [err:%v]\n", msg.To, msg.From, err)
+			var e E
+			status := runtime.NewStatusError(runtime.StatusInvalidArgument, msgHandlerLoc, err)
+			e.Handle(status, "", "")
 		}
 	}
 }
