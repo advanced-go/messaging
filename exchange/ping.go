@@ -41,15 +41,13 @@ func ping[E runtime.ErrorHandler](directory Directory, ctx context.Context, uri 
 		time.Sleep(wait)
 		result, err1 := cache.Get(uri)
 		if err1 != nil {
+			fmt.Printf("wait: [%v] error: [%v]\n", wait, err1)
 			continue
 		}
 		if result.Status == nil {
 			return e.Handle(runtime.NewStatusError(http.StatusInternalServerError, pingLocation, errors.New(fmt.Sprintf("ping response status not available: [%v]", uri))), runtime.RequestId(ctx), "")
-
 		}
 		return result.Status
 	}
-	//return e.Handle(runtime.RequestId(ctx), pingLocation, errors.New(fmt.Sprintf("ping response time out: [%v]", uri))).SetCode(runtime.StatusDeadlineExceeded)
 	return e.Handle(runtime.NewStatusError(runtime.StatusDeadlineExceeded, pingLocation, errors.New(fmt.Sprintf("ping response time out: [%v]", uri))), runtime.RequestId(ctx), "")
-
 }
