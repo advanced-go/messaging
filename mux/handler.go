@@ -32,11 +32,6 @@ func HttpHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	// Check for ping request
-	//if strings.HasPrefix(r.URL.Path, PingPrefix) {
-	//	processPing(w, r)
-	//	return
-	//}
 	for _, rt := range routes {
 		nid, rsc, ok := http2.UprootUrn(r.URL.Path)
 		if !ok {
@@ -58,7 +53,7 @@ func HttpHandler(w http.ResponseWriter, r *http.Request) {
 func ProcessPing[E runtime.ErrorHandler](w http.ResponseWriter, nid string) {
 	status := exchange.Ping[E](nil, nid)
 	if status.OK() {
-		status.SetContent(fmt.Sprintf("Ping resource: %v", nid), false)
+		status.SetContent(fmt.Sprintf("Ping status: %v, resource: %v", status, nid), false)
 	}
 	http2.WriteResponse[E](w, nil, status, nil)
 }
