@@ -39,7 +39,7 @@ func Example_processPing() {
 		fmt.Printf("test: processPing() -> [status:%v]\n", status)
 	}
 	nid, rsc, ok := http2.UprootUrn(r.URL.Path)
-	processPing[runtime.TestError](w, nid)
+	ProcessPing[runtime.TestError](w, nid)
 	buf, status1 := io2.ReadAll(w.Result().Body)
 	if !status1.OK() {
 		fmt.Printf("test: ReadAll() -> [status:%v]\n", status1)

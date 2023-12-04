@@ -45,7 +45,7 @@ func HttpHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		if rsc == PingResource {
-			processPing[runtime.LogError](w, nid)
+			ProcessPing[runtime.LogError](w, nid)
 			return
 		}
 		rt.handler(w, r)
@@ -54,7 +54,7 @@ func HttpHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 }
 
-func processPing[E runtime.ErrorHandler](w http.ResponseWriter, nid string) {
+func ProcessPing[E runtime.ErrorHandler](w http.ResponseWriter, nid string) {
 	status := exchange.Ping[E](nil, nid)
 	status.SetContent(fmt.Sprintf("Ping resource: %v", nid), false)
 	http2.WriteResponse[E](w, nil, status, nil)
