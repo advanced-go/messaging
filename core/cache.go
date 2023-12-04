@@ -68,6 +68,7 @@ func (r *messageCache) Exclude(event string, status int) []string {
 }
 
 func (r *messageCache) Add(msg Message) error {
+	fmt.Printf("%v\n", "MessageCache.Add() -> begin")
 	if msg.From == "" {
 		return errors.New("invalid argument: message from is empty")
 	}
@@ -75,6 +76,7 @@ func (r *messageCache) Add(msg Message) error {
 	defer r.mu.Unlock()
 	if _, ok := r.m[msg.From]; !ok {
 		r.m[msg.From] = msg
+		fmt.Printf("%v\n", "MessageCache.Add() -> successful")
 		return nil
 	}
 	return errors.New(fmt.Sprintf("invalid argument: message found [%v]", msg.From))
