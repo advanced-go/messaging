@@ -10,6 +10,7 @@ import (
 
 const (
 	PingResource = "ping"
+	pingLoc      = "github.com/advanced-go/messaging/mux:ProcessPing"
 )
 
 type muxEntry struct {
@@ -56,6 +57,8 @@ func HttpHandler(w http.ResponseWriter, r *http.Request) {
 
 func ProcessPing[E runtime.ErrorHandler](w http.ResponseWriter, nid string) {
 	status := exchange.Ping[E](nil, nid)
-	status.SetContent(fmt.Sprintf("Ping resource: %v", nid), false)
+	if status.OK() {
+		status.SetContent(fmt.Sprintf("Ping resource: %v", nid), false)
+	}
 	http2.WriteResponse[E](w, nil, status, nil)
 }

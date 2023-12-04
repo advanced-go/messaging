@@ -11,11 +11,11 @@ import (
 )
 
 const (
-	maxWait = time.Second * 2
+	maxWait = time.Second * 4
 )
 
 const (
-	pingLocation = PkgPath + "/Ping"
+	pingLocation = PkgPath + ":Ping"
 )
 
 // Ping - templated function to "ping" a resource
