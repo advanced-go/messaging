@@ -57,7 +57,7 @@ func pingGood(c chan core.Message) {
 			if !open {
 				return
 			}
-			core.ReplyTo(msg, runtime.NewStatusOK().SetDuration(time.Since(start)))
+			core.SendReply(msg, runtime.NewStatusOK().SetDuration(time.Since(start)))
 		default:
 		}
 	}
@@ -71,7 +71,7 @@ func pingBad(c chan core.Message) {
 				return
 			}
 			time.Sleep(time.Second * 4)
-			core.ReplyTo(msg, runtime.NewStatusOK().SetDuration(time.Since(start)))
+			core.SendReply(msg, runtime.NewStatusOK().SetDuration(time.Since(start)))
 		default:
 		}
 	}
@@ -86,7 +86,7 @@ func pingError(c chan core.Message, err error) {
 			}
 			if err != nil {
 				time.Sleep(time.Second)
-				core.ReplyTo(msg, runtime.NewStatusError(0, pingLocation, err).SetDuration(time.Since(start)))
+				core.SendReply(msg, runtime.NewStatusError(0, pingLocation, err).SetDuration(time.Since(start)))
 			}
 		default:
 		}
@@ -101,7 +101,7 @@ func pingDelay(c chan core.Message) {
 				return
 			}
 			time.Sleep(time.Second)
-			core.ReplyTo(msg, runtime.NewStatusOK().SetDuration(time.Since(start)))
+			core.SendReply(msg, runtime.NewStatusOK().SetDuration(time.Since(start)))
 		default:
 		}
 	}

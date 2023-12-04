@@ -13,6 +13,7 @@ const (
 
 type Agent interface {
 	Run()
+	Shutdown()
 }
 
 type agentCfg struct {
@@ -33,10 +34,6 @@ func newAgent(dir *directory, uri string, ctrlHandler, dataHandler core.MessageH
 	if len(uri) == 0 {
 		return nil, runtime.NewStatusError(runtime.StatusInvalidArgument, newAgentLocation, errors.New("invalid argument: uri is empty"))
 	}
-	//d := any(dir).(*directory)
-	//if d == nil {
-	//	return nil, runtime.NewStatusError(runtime.StatusInvalidContent, newAgentLocation, errors.New(fmt.Sprintf("Directory is not of *directory type")))
-	//}
 	m, status := dir.get(uri)
 	if !status.OK() {
 		return nil, status
@@ -50,6 +47,12 @@ func newAgent(dir *directory, uri string, ctrlHandler, dataHandler core.MessageH
 
 func (a *agentCfg) Run() {
 	go run(a)
+}
+
+func (a *agentCfg) Shutdown() {
+	if a.m.ctrl != nil {
+		a.m.ctrl <- core.Message{Event: core.ShutdownEvent}
+	}
 }
 
 func run(cfg *agentCfg) {

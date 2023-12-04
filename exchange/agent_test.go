@@ -72,7 +72,7 @@ func newAgentShutdownDataHandler(msg core.Message) {
 	fmt.Printf(fmt.Sprintf("test: NewAgentShutdown_DataHandler() -> %v\n", msg.RelatesTo))
 }
 
-func _Example_NewAgent_Shutdown() {
+func Example_NewAgent_Shutdown() {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Printf("test: NewAgentShutdown() -> [recovered:%v]\n", r)
@@ -81,28 +81,24 @@ func _Example_NewAgent_Shutdown() {
 	agentDir := any(NewDirectory()).(*directory)
 	uri := "github.com/advanced-go/example-domain/activity"
 	c := make(chan core.Message, 16)
-	err := agentDir.add(newMailbox(uri, c, nil))
-	if err != nil {
-		fmt.Printf("test: add() -> [err:%v]\n", err)
+	status := agentDir.add(newMailbox(uri, c, nil))
+	if !status.OK() {
+		fmt.Printf("test: add() -> [status:%v]\n", status)
 	}
-	a, err1 := newAgent(agentDir, uri, newAgentShutdownCtrlHandler, newAgentShutdownDataHandler)
-	if err1 != nil {
-		fmt.Printf("test: add() -> [err:%v]\n", err1)
+	a, status1 := newAgent(agentDir, uri, newAgentShutdownCtrlHandler, newAgentShutdownDataHandler)
+	if !status1.OK() {
+		fmt.Printf("test: add() -> [status:%v]\n", status)
 	}
-	// 1 Nanosecond is too short a wait
-	d := time.Nanosecond * 10
+	// 1 Nanosecond
+	d := time.Nanosecond * 1
 	a.Run()
-	c <- core.Message{To: "", From: "", Event: core.StartupEvent, RelatesTo: "", Status: nil, Content: nil, ReplyTo: nil}
+	agentDir.SendCtrl(core.Message{To: uri, From: "", Event: core.StartupEvent})
 	time.Sleep(d)
-	c <- core.Message{To: "", From: "", Event: core.PauseEvent, RelatesTo: "", Status: nil, Content: nil, ReplyTo: nil}
+	agentDir.SendCtrl(core.Message{To: uri, From: "", Event: core.PingEvent})
 	time.Sleep(d)
-	c <- core.Message{To: "", From: "", Event: core.ResumeEvent, RelatesTo: "", Status: nil, Content: nil, ReplyTo: nil}
-	time.Sleep(d)
-	c <- core.Message{To: "", From: "", Event: core.PingEvent, RelatesTo: "", Status: nil, Content: nil, ReplyTo: nil}
-	time.Sleep(d)
-	c <- core.Message{To: "", From: "", Event: core.ReconfigureEvent, RelatesTo: "", Status: nil, Content: nil, ReplyTo: nil}
-	time.Sleep(d)
-	c <- core.Message{To: "", From: "", Event: core.ShutdownEvent, RelatesTo: "", Status: nil, Content: nil, ReplyTo: nil}
+	agentDir.SendCtrl(core.Message{To: uri, From: "", Event: core.ReconfigureEvent})
+	time.Sleep(time.Millisecond * 100)
+	a.Shutdown()
 	time.Sleep(time.Millisecond * 100)
 
 	// will panic

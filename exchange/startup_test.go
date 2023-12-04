@@ -110,7 +110,7 @@ func startupGood(c chan core.Message) {
 			if !open {
 				return
 			}
-			core.ReplyTo(msg, runtime.NewStatusOK().SetDuration(time.Since(start)))
+			core.SendReply(msg, runtime.NewStatusOK().SetDuration(time.Since(start)))
 		default:
 		}
 	}
@@ -124,7 +124,7 @@ func startupBad(c chan core.Message) {
 				return
 			}
 			time.Sleep(time.Second + time.Millisecond*100)
-			core.ReplyTo(msg, runtime.NewStatusOK().SetDuration(time.Since(start)))
+			core.SendReply(msg, runtime.NewStatusOK().SetDuration(time.Since(start)))
 		default:
 		}
 	}
@@ -139,10 +139,10 @@ func startupDepends(c chan core.Message, err error) {
 			}
 			if err != nil {
 				time.Sleep(time.Second)
-				core.ReplyTo(msg, runtime.NewStatusError(0, startupLocation, err).SetDuration(time.Since(start)))
+				core.SendReply(msg, runtime.NewStatusError(0, startupLocation, err).SetDuration(time.Since(start)))
 			} else {
 				time.Sleep(time.Second + (time.Millisecond * 900))
-				core.ReplyTo(msg, runtime.NewStatusOK().SetDuration(time.Since(start)))
+				core.SendReply(msg, runtime.NewStatusOK().SetDuration(time.Since(start)))
 			}
 
 		default:
