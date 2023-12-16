@@ -23,7 +23,7 @@ func Example_NewAgent() {
 	agentDir := any(NewDirectory()).(*directory)
 	uri := "github.com/advanced-go/example-domain/activity"
 	c := make(chan core.Message, 16)
-	status := agentDir.add(newMailbox(uri, c, nil))
+	status := agentDir.add(newMailbox(uri, false, c, nil))
 	if !status.OK() {
 		fmt.Printf("test: add() -> [status:%v]\n", status)
 	}
@@ -88,7 +88,7 @@ func Example_NewAgent_Shutdown() {
 	agentDir := any(NewDirectory()).(*directory)
 	uri := "github.com/advanced-go/example-domain/activity"
 	c := make(chan core.Message, 16)
-	status := agentDir.add(newMailbox(uri, c, nil))
+	status := agentDir.add(newMailbox(uri, false, c, nil))
 	if !status.OK() {
 		fmt.Printf("test: add() -> [status:%v]\n", status)
 	}

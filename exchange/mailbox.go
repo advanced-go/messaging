@@ -9,13 +9,15 @@ const (
 )
 
 type Mailbox struct {
-	uri  string
-	ctrl chan core.Message
-	data chan core.Message
+	public bool
+	uri    string
+	ctrl   chan core.Message
+	data   chan core.Message
 }
 
-func NewMailbox(uri string, data bool) *Mailbox {
+func NewMailbox(uri string, public, data bool) *Mailbox {
 	m := new(Mailbox)
+	m.public = public
 	m.uri = uri
 	m.ctrl = make(chan core.Message, 16)
 	if data {

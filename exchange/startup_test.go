@@ -13,7 +13,7 @@ var credFn core.Credentials = func() (string, string, error) {
 }
 
 func testRegister(dir *directory, uri string, cmd, data chan core.Message) error {
-	dir.add(newMailbox(uri, cmd, data))
+	dir.add(newMailbox(uri, false, cmd, data))
 	return nil
 }
 
