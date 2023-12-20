@@ -2,11 +2,12 @@ package mux
 
 import (
 	"fmt"
-	"github.com/advanced-go/core/http2"
-	"github.com/advanced-go/core/io2"
 	"github.com/advanced-go/core/runtime"
+	"github.com/advanced-go/core/uri"
 	"github.com/advanced-go/messaging/exchange"
+	"io"
 	"net/http"
+	"net/http/httptest"
 )
 
 func appHttpHandler(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +20,7 @@ func Example_HttpHandler() {
 
 	Handle(pattern, appHttpHandler)
 
-	rec := http2.NewRecorder()
+	rec := httptest.NewRecorder()
 
 	HttpHandler(rec, r)
 
@@ -31,16 +32,16 @@ func Example_HttpHandler() {
 }
 
 func Example_processPing() {
-	uri := "github.com/advanced-go/example-domain/activity"
-	w := http2.NewRecorder()
+	uri1 := "github.com/advanced-go/example-domain/activity"
+	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("", "github.com/advanced-go/example-domain/activity:ping", nil)
-	status := exchange.Register(exchange.NewMailbox(uri, false))
+	status := exchange.Register(exchange.NewMailbox(uri1, false, false))
 	if !status.OK() {
 		fmt.Printf("test: processPing() -> [status:%v]\n", status)
 	}
-	nid, rsc, ok := http2.UprootUrn(r.URL.Path)
+	nid, rsc, ok := uri.UprootUrn(r.URL.Path)
 	ProcessPing[runtime.Output](w, nid)
-	buf, status1 := io2.ReadAll(w.Result().Body)
+	buf, status1 := readAll(w.Result().Body)
 	if !status1.OK() {
 		fmt.Printf("test: ReadAll() -> [status:%v]\n", status1)
 	}
@@ -49,4 +50,16 @@ func Example_processPing() {
 	//Output:
 	//test: processPing() -> [nid:github.com/advanced-go/example-domain/activity] [nss:ping] [ok:true] [status:504] [content:]
 
+}
+
+func readAll(body io.ReadCloser) ([]byte, runtime.Status) {
+	if body == nil {
+		return nil, runtime.StatusOK()
+	}
+	defer body.Close()
+	buf, err := io.ReadAll(body)
+	if err != nil {
+		return nil, runtime.NewStatusError(runtime.StatusIOError, PkgPath+":ReadAll", err)
+	}
+	return buf, runtime.StatusOK()
 }
