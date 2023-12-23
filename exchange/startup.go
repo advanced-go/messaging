@@ -15,7 +15,7 @@ const (
 
 // Startup - templated function to start all registered resources.
 func Startup[E runtime.ErrorHandler](duration time.Duration, content core.Map) (status runtime.Status) {
-	return startup[E](exchDir, duration, content)
+	return startup[E](Root, duration, content)
 }
 
 func startup[E runtime.ErrorHandler](directory Directory, duration time.Duration, content core.Map) (status runtime.Status) {
@@ -43,7 +43,7 @@ func startup[E runtime.ErrorHandler](directory Directory, duration time.Duration
 		}
 		break
 	}
-	Shutdown()
+	ShutdownDirectory(Root, core.Message{Event: core.ShutdownEvent})
 	if len(failures) > 0 {
 		handleErrors[E](failures, cache)
 		return runtime.NewStatus(http.StatusInternalServerError)

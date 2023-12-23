@@ -21,13 +21,14 @@ const (
 type Directory interface {
 	Count() int
 	List() []string
+	Add(m *Mailbox) runtime.Status
 	SendCtrl(msg core.Message) runtime.Status
 	SendData(msg core.Message) runtime.Status
+	Shutdown(msg core.Message) runtime.Status
 }
 
 type directory struct {
-	m *sync.Map //[string]*Mailbox
-	//mu sync.RWMutex
+	m *sync.Map
 }
 
 // NewDirectory - create a new directory
@@ -82,33 +83,24 @@ func (d *directory) SendData(msg core.Message) runtime.Status {
 	return runtime.StatusOK()
 }
 
-func (d *directory) shutdown(uri string) runtime.Status {
-	//d.mu.RLock()
-	//defer d.mu.RUnlock()
-	//for _, e := range d.m {
-	//	if e.ctrl != nil {
-	//		e.ctrl <- core.Message{To: e.uri, Event: core.ShutdownEvent}
-	//	}
-	//}
-	m, status := d.get(uri)
-	if !status.OK() {
-		return status
-	}
-	if m.ctrl != nil {
-		close(m.ctrl)
-	}
-	if m.data != nil {
-		close(m.data)
-	}
-	d.m.Delete(uri)
-	return runtime.StatusOK()
-}
-
-func (d *directory) add(m *Mailbox) runtime.Status {
+func (d *directory) Add(m *Mailbox) runtime.Status {
 	if m == nil {
-		return runtime.NewStatusError(runtime.StatusInvalidArgument, dirAddLocation, errors.New(fmt.Sprintf("invalid argument: mailbox is nil")))
+		return runtime.NewStatusError(runtime.StatusInvalidArgument, dirAddLocation, errors.New("invalid argument: mailbox is nil"))
+	}
+	if len(m.uri) == 0 {
+		return runtime.NewStatusError(runtime.StatusInvalidArgument, dirAddLocation, errors.New("invalid argument: mailbox uri is empty"))
+	}
+	if m.ctrl == nil {
+		return runtime.NewStatusError(runtime.StatusInvalidArgument, dirAddLocation, errors.New("invalid argument: mailbox command channel is nil"))
+	}
+	_, ok := d.m.Load(m.uri)
+	if ok {
+		return runtime.NewStatusError(runtime.StatusInvalidArgument, dirAddLocation, errors.New(fmt.Sprintf("invalid argument: Directory mailbox already exists: [%v]", m.uri)))
 	}
 	d.m.Store(m.uri, m)
+	m.shutdown = func() runtime.Status {
+		return d.shutdown(m.uri)
+	}
 	return runtime.StatusOK()
 }
 
@@ -124,4 +116,37 @@ func (d *directory) get(uri string) (*Mailbox, runtime.Status) {
 		return mbox, runtime.StatusOK()
 	}
 	return nil, runtime.NewStatusError(runtime.StatusInvalidContent, dirGetLocation, errors.New("invalid Mailbox type"))
+}
+
+func (d *directory) Shutdown(msg core.Message) runtime.Status {
+	// TO DO: add authentication
+	return d.shutdown(msg.To)
+}
+
+func (d *directory) shutdown(uri string) runtime.Status {
+	//d.mu.RLock()
+	//defer d.mu.RUnlock()
+	//for _, e := range d.m {
+	//	if e.ctrl != nil {
+	//		e.ctrl <- core.Message{To: e.uri, Event: core.ShutdownEvent}
+	//	}
+	//}
+	m, status := d.get(uri)
+	if !status.OK() {
+		return status
+	}
+	if m.data != nil {
+		close(m.data)
+	}
+	if m.ctrl != nil {
+		close(m.ctrl)
+	}
+	d.m.Delete(uri)
+	return runtime.StatusOK()
+}
+
+func ShutdownDirectory(dir Directory, msg core.Message) runtime.Status {
+	//TO DO: authentication and implementation
+
+	return runtime.StatusOK()
 }

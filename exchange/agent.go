@@ -8,49 +8,43 @@ import (
 )
 
 const (
-	newAgentLocation = PkgPath + ":NewAgent"
+	newAgentLocation      = PkgPath + ":NewAgent"
+	agentSendCtrlLocation = PkgPath + ":Agent/SendCtrl"
+	agentSendDataLocation = PkgPath + ":Agent/SendData"
 )
+
+type RunFunc func(m *Mailbox, activity core.MessageHandler)
 
 type Agent interface {
 	Run()
 	Shutdown()
+	SendCtrl(msg core.Message) runtime.Status
+	SendData(msg core.Message) runtime.Status
+	Register(dir Directory, makePublic bool) runtime.Status
 }
 
 type agentCfg struct {
-	dir           *directory
-	m             *Mailbox
-	ctrlHandler   core.MessageHandler
-	dataHandler   core.MessageHandler
-	statusHandler core.MessageHandler
+	m        *Mailbox
+	activity core.MessageHandler
+	runFunc  RunFunc
 }
 
-func NewAgent(uri string, ctrl, data, status core.MessageHandler) (Agent, runtime.Status) {
-	dir := any(exchDir).(*directory)
-	if dir == nil {
-		return nil, runtime.NewStatusError(runtime.StatusInvalidContent, newAgentLocation, errors.New(fmt.Sprintf("Directory is not of *directory type")))
-	}
-	return newAgent(dir, uri, ctrl, data, status)
-}
-
-func newAgent(dir *directory, uri string, ctrl, data, status core.MessageHandler) (Agent, runtime.Status) {
+func NewAgent(uri string, data chan core.Message, activity core.MessageHandler, runFunc RunFunc) (Agent, runtime.Status) {
 	if len(uri) == 0 {
-		return nil, runtime.NewStatusError(runtime.StatusInvalidArgument, newAgentLocation, errors.New("invalid argument: uri is empty"))
+		return nil, runtime.NewStatusError(runtime.StatusInvalidArgument, newAgentLocation, errors.New("URI is empty"))
 	}
-	m, status1 := dir.get(uri)
-	if !status1.OK() {
-		return nil, status1
+	a := new(agentCfg)
+	a.m = NewMailbox(uri, data)
+	a.activity = activity
+	if a.activity == nil {
+		a.activity = func(msg core.Message) {}
 	}
-	cfg := new(agentCfg)
-	cfg.dir = dir
-	cfg.m = m
-	cfg.ctrlHandler = ctrl
-	cfg.dataHandler = data
-	cfg.statusHandler = status
-	return cfg, runtime.StatusOK()
+	a.runFunc = runFunc
+	return a, runtime.StatusOK()
 }
 
 func (a *agentCfg) Run() {
-	go run(a)
+	go a.runFunc(a.m, a.activity)
 }
 
 func (a *agentCfg) Shutdown() {
@@ -59,43 +53,47 @@ func (a *agentCfg) Shutdown() {
 	}
 }
 
-func run(cfg *agentCfg) {
-	paused := false
+func (a *agentCfg) SendCtrl(msg core.Message) runtime.Status {
+	if a.m.ctrl == nil {
+		return runtime.NewStatusError(runtime.StatusInvalidContent, agentSendCtrlLocation, errors.New(fmt.Sprintf("error: control channel is nil: [%v]", a.m.uri)))
+	}
+	a.m.ctrl <- msg
+	return runtime.StatusOK()
+}
+
+func (a *agentCfg) SendData(msg core.Message) runtime.Status {
+	if a.m.data == nil {
+		return runtime.NewStatusError(runtime.StatusInvalidContent, agentSendDataLocation, errors.New(fmt.Sprintf("error: data channel is nil: [%v]", a.m.uri)))
+	}
+	a.m.data <- msg
+	return runtime.StatusOK()
+}
+
+func (a *agentCfg) Register(dir Directory, makePublic bool) runtime.Status {
+	a.m.public = makePublic
+	return dir.Add(a.m)
+}
+
+func DefaultRun(m *Mailbox, _ core.Message, handler core.MessageHandler) {
 	for {
-		if cfg.m.data != nil && !paused {
-			select {
-			case msg, open := <-cfg.m.data:
-				if open {
-					go cfg.dataHandler(msg)
-				}
-			default:
-			}
-		}
 		select {
-		case msg, open := <-cfg.m.ctrl:
+		case msg, open := <-m.ctrl:
 			if !open {
 				return
 			}
 			switch msg.Event {
 			case core.PauseEvent:
-				paused = true
-				if cfg.statusHandler != nil {
-					go cfg.statusHandler(core.Message{Event: msg.Event, Status: runtime.StatusOK()})
-				}
+				handler(core.Message{Event: msg.Event, Status: runtime.StatusOK()})
 			case core.ResumeEvent:
-				paused = false
-				if cfg.statusHandler != nil {
-					go cfg.statusHandler(core.Message{Event: msg.Event, Status: runtime.StatusOK()})
-				}
+				handler(core.Message{Event: msg.Event, Status: runtime.StatusOK()})
 			case core.ShutdownEvent:
-				cfg.ctrlHandler(msg)
-				status := cfg.dir.shutdown(cfg.m.uri)
-				if cfg.statusHandler != nil {
-					go cfg.statusHandler(core.Message{Event: msg.Event, Status: status})
+				handler(core.Message{Event: msg.Event, Status: runtime.StatusOK()})
+				if m.shutdown != nil {
+					m.shutdown()
 				}
 				return
 			default:
-				go cfg.ctrlHandler(msg)
+				handler(msg)
 			}
 		default:
 		}

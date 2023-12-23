@@ -20,7 +20,7 @@ const (
 
 // Ping - templated function to "ping" a resource
 func Ping[E runtime.ErrorHandler](ctx context.Context, uri string) (status runtime.Status) {
-	return ping[E](exchDir, ctx, uri)
+	return ping[E](Root, ctx, uri)
 }
 
 func ping[E runtime.ErrorHandler](directory Directory, ctx context.Context, uri string) (status runtime.Status) {

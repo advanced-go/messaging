@@ -1,19 +1,15 @@
 package exchange
 
-import (
-	"errors"
-	"github.com/advanced-go/core/runtime"
-	"github.com/advanced-go/messaging/core"
-)
-
 const (
 	sendLoc     = PkgPath + ":Send"
 	registerLoc = PkgPath + ":Register"
 )
 
-var exchDir = NewDirectory()
+var Root = NewDirectory()
 
+/*
 // Register - add a mailbox to the exchange directory
+
 func Register(m *Mailbox) runtime.Status {
 	if m == nil {
 		return runtime.NewStatusError(runtime.StatusInvalidArgument, registerLoc, errors.New("invalid argument: mailbox is nil"))
@@ -24,17 +20,19 @@ func Register(m *Mailbox) runtime.Status {
 	if m.ctrl == nil {
 		return runtime.NewStatusError(runtime.StatusInvalidArgument, registerLoc, errors.New("invalid argument: mailbox command channel is nil"))
 	}
-	d, ok := any(exchDir).(*directory)
+	d, ok := any(Root).(*directory)
 	if !ok {
 		return runtime.NewStatusError(runtime.StatusInvalidContent, registerLoc, errors.New("invalid argument: Directory type is not *directory"))
 	}
-	d.add(m)
+	//d.add(m)
 	return runtime.StatusOK()
 }
 
+
+
 // SendCtrl - send to command channel
 func SendCtrl(msg core.Message) runtime.Status {
-	status := exchDir.SendCtrl(msg)
+	status := Root.SendCtrl(msg)
 	if !status.OK() {
 		status.AddLocation(sendLoc)
 	}
@@ -43,7 +41,7 @@ func SendCtrl(msg core.Message) runtime.Status {
 
 // SendData - send to data channel
 func SendData(msg core.Message) runtime.Status {
-	status := exchDir.SendData(msg)
+	status := Root.SendData(msg)
 	if !status.OK() {
 		status.AddLocation(sendLoc)
 	}
@@ -51,6 +49,9 @@ func SendData(msg core.Message) runtime.Status {
 }
 
 // Shutdown - send a shutdown message to all directory entries
-func Shutdown() {
-	//exchDir.Shutdown()
+func shutdown() {
+	//Root.Shutdown()
 }
+
+
+*/

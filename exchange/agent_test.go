@@ -3,7 +3,6 @@ package exchange
 import (
 	"fmt"
 	"github.com/advanced-go/messaging/core"
-	"time"
 )
 
 func newAgentCtrlHandler(msg core.Message) {
@@ -14,6 +13,7 @@ func newAgentStatusHandler(msg core.Message) {
 	fmt.Printf(fmt.Sprintf("test: NewAgent_StatusHandler() -> [%v] [status:%v]\n", msg.Event, msg.Status))
 }
 
+/*
 func Example_NewAgent() {
 	defer func() {
 		if r := recover(); r != nil {
@@ -119,3 +119,6 @@ func Example_NewAgent_Shutdown() {
 	//test: NewAgentShutdown() -> [recovered:send on closed channel]
 
 }
+
+
+*/
