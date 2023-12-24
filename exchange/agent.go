@@ -13,38 +13,39 @@ const (
 	agentSendDataLocation = PkgPath + ":Agent/SendData"
 )
 
-type RunFunc func(m *Mailbox, activity core.MessageHandler)
+type RunFunc func(m *Mailbox, activity core.MessageHandler, ctrlHandler core.MessageHandler)
 
 type Agent interface {
-	Run()
+	Run(activity core.MessageHandler, ctrlHandler core.MessageHandler)
 	Shutdown()
 	SendCtrl(msg core.Message) runtime.Status
 	SendData(msg core.Message) runtime.Status
-	Register(dir Directory, makePublic bool) runtime.Status
+	Register(dir Directory) runtime.Status
 }
 
 type agentCfg struct {
-	m        *Mailbox
-	activity core.MessageHandler
-	runFunc  RunFunc
+	m       *Mailbox
+	runFunc RunFunc
 }
 
-func NewAgent(uri string, data chan core.Message, activity core.MessageHandler, runFunc RunFunc) (Agent, runtime.Status) {
+func NewAgent(uri string, runFunc RunFunc, data chan core.Message) (Agent, runtime.Status) {
 	if len(uri) == 0 {
 		return nil, runtime.NewStatusError(runtime.StatusInvalidArgument, newAgentLocation, errors.New("URI is empty"))
 	}
 	a := new(agentCfg)
 	a.m = NewMailbox(uri, data)
-	a.activity = activity
-	if a.activity == nil {
-		a.activity = func(msg core.Message) {}
-	}
 	a.runFunc = runFunc
 	return a, runtime.StatusOK()
 }
 
-func (a *agentCfg) Run() {
-	go a.runFunc(a.m, a.activity)
+func (a *agentCfg) Run(activity core.MessageHandler, ctrlHandler core.MessageHandler) {
+	if activity == nil {
+		activity = func(msg core.Message) {}
+	}
+	if ctrlHandler == nil {
+		ctrlHandler = func(msg core.Message) {}
+	}
+	go a.runFunc(a.m, activity, ctrlHandler)
 }
 
 func (a *agentCfg) Shutdown() {
@@ -69,12 +70,12 @@ func (a *agentCfg) SendData(msg core.Message) runtime.Status {
 	return runtime.StatusOK()
 }
 
-func (a *agentCfg) Register(dir Directory, makePublic bool) runtime.Status {
-	a.m.public = makePublic
+func (a *agentCfg) Register(dir Directory) runtime.Status {
+	//a.m.public = makePublic
 	return dir.Add(a.m)
 }
 
-func DefaultRun(m *Mailbox, _ core.Message, handler core.MessageHandler) {
+func DefaultRun(m *Mailbox, _ core.MessageHandler, ctrlHandler core.MessageHandler) {
 	for {
 		select {
 		case msg, open := <-m.ctrl:
@@ -82,18 +83,17 @@ func DefaultRun(m *Mailbox, _ core.Message, handler core.MessageHandler) {
 				return
 			}
 			switch msg.Event {
-			case core.PauseEvent:
-				handler(core.Message{Event: msg.Event, Status: runtime.StatusOK()})
-			case core.ResumeEvent:
-				handler(core.Message{Event: msg.Event, Status: runtime.StatusOK()})
 			case core.ShutdownEvent:
-				handler(core.Message{Event: msg.Event, Status: runtime.StatusOK()})
+				ctrlHandler(core.Message{Event: msg.Event, Status: runtime.StatusOK()})
 				if m.shutdown != nil {
-					m.shutdown()
+					status := m.shutdown()
+					if !status.OK() {
+						fmt.Println(status)
+					}
 				}
 				return
 			default:
-				handler(msg)
+				ctrlHandler(msg)
 			}
 		default:
 		}

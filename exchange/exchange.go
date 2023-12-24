@@ -5,7 +5,7 @@ const (
 	registerLoc = PkgPath + ":Register"
 )
 
-var Root = NewDirectory()
+var HostDirectory = NewDirectory()
 
 /*
 // Register - add a mailbox to the exchange directory
