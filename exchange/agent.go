@@ -28,6 +28,10 @@ type agentCfg struct {
 	runFunc RunFunc
 }
 
+func NewDefaultAgent(uri string) (Agent, runtime.Status) {
+	return NewAgent(uri, DefaultRun, nil)
+}
+
 func NewAgent(uri string, runFunc RunFunc, data chan core.Message) (Agent, runtime.Status) {
 	if len(uri) == 0 {
 		return nil, runtime.NewStatusError(runtime.StatusInvalidArgument, newAgentLocation, errors.New("URI is empty"))
