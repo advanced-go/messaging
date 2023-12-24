@@ -43,7 +43,7 @@ func startup[E runtime.ErrorHandler](directory Directory, duration time.Duration
 		}
 		break
 	}
-	ShutdownDirectory(HostDirectory, core.Message{Event: core.ShutdownEvent})
+	shutdownHost(core.Message{Event: core.ShutdownEvent})
 	if len(failures) > 0 {
 		handleErrors[E](failures, cache)
 		return runtime.NewStatus(http.StatusInternalServerError)

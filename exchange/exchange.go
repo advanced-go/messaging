@@ -1,8 +1,15 @@
 package exchange
 
+import (
+	"github.com/advanced-go/core/runtime"
+	"github.com/advanced-go/messaging/core"
+)
+
 const (
-	sendLoc     = PkgPath + ":Send"
-	registerLoc = PkgPath + ":Register"
+	sendCtrlLoc = PkgPath + ":SendCtrl"
+	sendDataLoc = PkgPath + ":SendData"
+
+	//registerLoc = PkgPath + ":Register"
 )
 
 var HostDirectory = NewDirectory()
@@ -30,28 +37,33 @@ func Register(m *Mailbox) runtime.Status {
 
 
 
+*/
+
 // SendCtrl - send to command channel
 func SendCtrl(msg core.Message) runtime.Status {
-	status := Root.SendCtrl(msg)
+	status := HostDirectory.SendCtrl(msg)
 	if !status.OK() {
-		status.AddLocation(sendLoc)
+		status.AddLocation(sendCtrlLoc)
 	}
 	return status
 }
 
 // SendData - send to data channel
 func SendData(msg core.Message) runtime.Status {
-	status := Root.SendData(msg)
+	status := HostDirectory.SendData(msg)
 	if !status.OK() {
-		status.AddLocation(sendLoc)
+		status.AddLocation(sendDataLoc)
 	}
 	return status
 }
 
 // Shutdown - send a shutdown message to all directory entries
-func shutdown() {
-	//Root.Shutdown()
+//func shutdown() {
+//HostDirectory.Shutdown()
+//}
+
+func shutdownHost(msg core.Message) runtime.Status {
+	//TO DO: authentication and implementation
+
+	return runtime.StatusOK()
 }
-
-
-*/

@@ -24,7 +24,7 @@ type Directory interface {
 	Add(m *Mailbox) runtime.Status
 	SendCtrl(msg core.Message) runtime.Status
 	SendData(msg core.Message) runtime.Status
-	Shutdown(msg core.Message) runtime.Status
+	//Shutdown(msg core.Message) runtime.Status
 }
 
 type directory struct {
@@ -60,6 +60,10 @@ func (d *directory) List() []string {
 }
 
 func (d *directory) SendCtrl(msg core.Message) runtime.Status {
+	// TO DO : authenticate shutdown control message
+	if msg.Event == core.ShutdownEvent {
+		return runtime.StatusOK()
+	}
 	mbox, status := d.get(msg.To)
 	if !status.OK() {
 		return status.AddLocation(dirSendCtrlLocation)
@@ -142,11 +146,5 @@ func (d *directory) shutdown(uri string) runtime.Status {
 		close(m.ctrl)
 	}
 	d.m.Delete(uri)
-	return runtime.StatusOK()
-}
-
-func ShutdownDirectory(dir Directory, msg core.Message) runtime.Status {
-	//TO DO: authentication and implementation
-
 	return runtime.StatusOK()
 }
