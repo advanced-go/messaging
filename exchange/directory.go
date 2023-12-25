@@ -24,7 +24,6 @@ type Directory interface {
 	Add(m *Mailbox) runtime.Status
 	SendCtrl(msg core.Message) runtime.Status
 	SendData(msg core.Message) runtime.Status
-	//Shutdown(msg core.Message) runtime.Status
 }
 
 type directory struct {
@@ -38,6 +37,7 @@ func NewDirectory() Directory {
 	return e
 }
 
+// Count - number of items in the sync map
 func (d *directory) Count() int {
 	count := 0
 	d.m.Range(func(key, value any) bool {
@@ -47,6 +47,7 @@ func (d *directory) Count() int {
 	return count
 }
 
+// List - a list of item uri's
 func (d *directory) List() []string {
 	var uri []string
 	d.m.Range(func(key, value any) bool {
@@ -59,6 +60,7 @@ func (d *directory) List() []string {
 	return uri
 }
 
+// SendCtrl - send a message to the select item's control channel
 func (d *directory) SendCtrl(msg core.Message) runtime.Status {
 	// TO DO : authenticate shutdown control message
 	if msg.Event == core.ShutdownEvent {
@@ -75,6 +77,7 @@ func (d *directory) SendCtrl(msg core.Message) runtime.Status {
 	return runtime.StatusOK()
 }
 
+// SendData - send a message to the item's data channel
 func (d *directory) SendData(msg core.Message) runtime.Status {
 	mbox, status := d.get(msg.To)
 	if !status.OK() {
@@ -87,6 +90,7 @@ func (d *directory) SendData(msg core.Message) runtime.Status {
 	return runtime.StatusOK()
 }
 
+// Add - add a mailbox
 func (d *directory) Add(m *Mailbox) runtime.Status {
 	if m == nil {
 		return runtime.NewStatusError(runtime.StatusInvalidArgument, dirAddLocation, errors.New("invalid argument: mailbox is nil"))
@@ -102,8 +106,8 @@ func (d *directory) Add(m *Mailbox) runtime.Status {
 		return runtime.NewStatusError(runtime.StatusInvalidArgument, dirAddLocation, errors.New(fmt.Sprintf("invalid argument: Directory mailbox already exists: [%v]", m.uri)))
 	}
 	d.m.Store(m.uri, m)
-	m.shutdown = func() runtime.Status {
-		return d.shutdown(m.uri)
+	m.unregister = func() {
+		d.m.Delete(m.uri)
 	}
 	return runtime.StatusOK()
 }
@@ -122,11 +126,13 @@ func (d *directory) get(uri string) (*Mailbox, runtime.Status) {
 	return nil, runtime.NewStatusError(runtime.StatusInvalidContent, dirGetLocation, errors.New("invalid Mailbox type"))
 }
 
+// Shutdown - close an item's mailbox
 func (d *directory) Shutdown(msg core.Message) runtime.Status {
 	// TO DO: add authentication
-	return d.shutdown(msg.To)
+	return runtime.StatusOK() //d.shutdown(msg.To)
 }
 
+/*
 func (d *directory) shutdown(uri string) runtime.Status {
 	//d.mu.RLock()
 	//defer d.mu.RUnlock()
@@ -148,3 +154,4 @@ func (d *directory) shutdown(uri string) runtime.Status {
 	d.m.Delete(uri)
 	return runtime.StatusOK()
 }
+*/

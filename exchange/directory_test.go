@@ -7,39 +7,43 @@ import (
 )
 
 func Example_Add() {
-	uri := "urn:test"
-	uri2 := "urn:test:two"
+	uri1 := "urn:test:one"
 
 	testDir := any(NewDirectory()).(*directory)
+	m1 := newDefaultMailbox(uri1)
 
 	fmt.Printf("test: Count() -> : %v\n", testDir.Count())
-	d2, _ := testDir.get(uri)
-	fmt.Printf("test: get(%v) -> : %v\n", uri, d2)
+	m0, status := testDir.get(uri1)
+	fmt.Printf("test: get(%v) -> : [mbox:%v] [status:%v]\n", uri1, m0, status)
 
-	testDir.Add(newMailbox(uri, false, nil, nil))
-	fmt.Printf("test: Add(%v) -> : ok\n", uri)
-	fmt.Printf("test: Count() -> : %v\n", testDir.Count())
-	d2, _ = testDir.get(uri)
-	fmt.Printf("test: get(%v) -> : %v\n", uri, d2)
+	status = testDir.Add(m1)
+	fmt.Printf("test: Add(%v) -> : [status:%v]\n", uri1, status)
 
-	testDir.Add(newMailbox(uri2, false, nil, nil))
-	fmt.Printf("test: Add(%v) -> : ok\n", uri2)
 	fmt.Printf("test: Count() -> : %v\n", testDir.Count())
-	d2, _ = testDir.get(uri2)
-	fmt.Printf("test: get(%v) -> : %v\n", uri2, d2)
+	m0, status = testDir.get(uri1)
+	fmt.Printf("test: get(%v) -> : [mbox:%v] [status:%v]\n", uri1, m0, status)
+
+	uri2 := "urn:test:two"
+
+	m2 := newDefaultMailbox(uri2)
+	status = testDir.Add(m2)
+	fmt.Printf("test: Add(%v) -> : [status:%v]\n", uri2, status)
+	fmt.Printf("test: Count() -> : %v\n", testDir.Count())
+	m0, status = testDir.get(uri2)
+	fmt.Printf("test: get(%v) -> : [mbox:%v] [status:%v]\n", uri2, m0, status)
 
 	fmt.Printf("test: List() -> : %v\n", testDir.List())
 
 	//Output:
 	//test: Count() -> : 0
-	//test: get(urn:test) -> : <nil>
-	//test: Add(urn:test) -> : ok
+	//test: get(urn:test:one) -> : [mbox:<nil>] [status:Not Found [invalid URI: directory mailbox not found [urn:test:one]]]
+	//test: Add(urn:test:one) -> : [status:OK]
 	//test: Count() -> : 1
-	//test: get(urn:test) -> : &{urn:test <nil> <nil>}
-	//test: Add(urn:test:two) -> : ok
+	//test: get(urn:test:one) -> : [mbox:urn:test:one] [status:OK]
+	//test: Add(urn:test:two) -> : [status:OK]
 	//test: Count() -> : 2
-	//test: get(urn:test:two) -> : &{urn:test:two <nil> <nil>}
-	//test: List() -> : [urn:test urn:test:two]
+	//test: get(urn:test:two) -> : [mbox:urn:test:two] [status:OK]
+	//test: List() -> : [urn:test:one urn:test:two]
 
 }
 
@@ -49,14 +53,13 @@ func Example_SendError() {
 
 	fmt.Printf("test: SendCtrl(%v) -> : %v\n", uri, testDir.SendCtrl(core.Message{To: uri}))
 
-	testDir.Add(newMailbox(uri, false, nil, nil))
-	fmt.Printf("test: Add(%v) -> : ok\n", uri)
-	fmt.Printf("test: SendCtrl(%v) -> : %v\n", uri, testDir.SendCtrl(core.Message{To: uri}))
+	m := newMailbox(uri, false, nil, nil)
+	status := testDir.Add(m)
+	fmt.Printf("test: Add(%v) -> : [status:%v]\n", uri, status)
 
 	//Output:
 	//test: SendCtrl(urn:test) -> : Not Found [invalid URI: directory mailbox not found [urn:test]]
-	//test: Add(urn:test) -> : ok
-	//test: SendCtrl(urn:test) -> : Invalid Content [entry control channel is nil: [urn:test]]
+	//test: Add(urn:test) -> : [status:Invalid Argument [invalid argument: mailbox command channel is nil]]
 
 }
 
@@ -90,8 +93,8 @@ func Example_Send() {
 func Example_ListCount() {
 	testDir := any(NewDirectory()).(*directory)
 
-	testDir.Add(newMailbox("test:uri1", false, nil, nil))
-	testDir.Add(newMailbox("test:uri2", false, nil, nil))
+	testDir.Add(newDefaultMailbox("test:uri1"))
+	testDir.Add(newDefaultMailbox("test:uri2"))
 
 	fmt.Printf("test: Count() -> : %v\n", testDir.Count())
 
@@ -100,5 +103,29 @@ func Example_ListCount() {
 	//Output:
 	//test: Count() -> : 2
 	//test: List() -> : [test:uri1 test:uri2]
+
+}
+
+func Example_Remove() {
+	uri := "urn:test/one"
+
+	m := newDefaultMailbox(uri)
+	testDir := any(NewDirectory()).(*directory)
+
+	status := testDir.Add(m)
+	fmt.Printf("test: Add(%v) -> : [%v]\n", uri, status)
+
+	status = testDir.SendCtrl(core.Message{To: uri, Event: core.PingEvent})
+	fmt.Printf("test: SendCtrl(%v) -> : [%v]\n", uri, status)
+
+	m.Close()
+
+	status = testDir.SendCtrl(core.Message{To: uri, Event: core.PingEvent})
+	fmt.Printf("test: SendCtrl(%v) -> : [%v]\n", uri, status)
+
+	//Output:
+	//test: Add(urn:test/one) -> : [OK]
+	//test: SendCtrl(urn:test/one) -> : [OK]
+	//test: SendCtrl(urn:test/one) -> : [Not Found [invalid URI: directory mailbox not found [urn:test/one]]]
 
 }

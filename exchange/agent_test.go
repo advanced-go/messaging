@@ -19,12 +19,11 @@ func Example_NewAgent() {
 	agentDir := NewDirectory() //any(NewDirectory()).(*directory)
 	uri := "github.com/advanced-go/example-domain/activity"
 	//c := make(chan core.Message, 16)
-	a, status := NewAgent(uri, DefaultRun, nil)
+	a, status := NewDefaultAgent(uri)
 	if !status.OK() {
 		fmt.Printf("test: NewAgent() -> [status:%v]\n", status)
 	}
 	status = a.Register(agentDir)
-	//status := agentDir.Add(newMailbox(uri, false, c, nil))
 	if !status.OK() {
 		fmt.Printf("test: add() -> [status:%v]\n", status)
 	}
@@ -53,7 +52,7 @@ func Example_NewAgent() {
 	a.SendCtrl(core.Message{To: uri, From: "", Event: core.ReconfigureEvent})
 	//c <- core.Message{To: "", From: "", Event: core.ReconfigureEvent, RelatesTo: "", Status: nil, Content: nil, ReplyTo: nil}
 	time.Sleep(d)
-	agentDir.SendCtrl(core.Message{To: uri, From: "", Event: core.ShutdownEvent})
+	a.SendCtrl(core.Message{To: uri, From: "", Event: core.ShutdownEvent})
 	//c <- core.Message{To: "", From: "", Event: core.ShutdownEvent, RelatesTo: "", Status: nil, Content: nil, ReplyTo: nil}
 	time.Sleep(time.Millisecond * 100)
 
