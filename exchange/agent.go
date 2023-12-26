@@ -42,8 +42,7 @@ func newDefaultAgent(uri string, ctrlHandler core.MessageHandler, dir Directory)
 	a.run = func(m *Mailbox) {
 		DefaultRun(m, ctrlHandler)
 	}
-	status := a.Register(dir)
-	return a, status
+	return a, a.Register(dir)
 }
 
 // Run - run the agent
