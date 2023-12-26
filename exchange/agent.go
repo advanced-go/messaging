@@ -14,14 +14,14 @@ const (
 )
 
 // RunFunc - type for an Agent run function
-type RunFunc func(m *Mailbox, activity core.MessageHandler, ctrlHandler core.MessageHandler)
+type RunFunc func(m *Mailbox, activity core.MessageHandler, handlers ...core.MessageHandler)
 
 // Agent - interface for an AI Agent
 type Agent interface {
 	SendCtrl(msg core.Message) runtime.Status
 	SendData(msg core.Message) runtime.Status
 	Register(dir Directory) runtime.Status
-	Run(activity core.MessageHandler, ctrlHandler core.MessageHandler)
+	Run(activity core.MessageHandler, handlers ...core.MessageHandler)
 	Shutdown()
 }
 
@@ -52,14 +52,14 @@ func NewAgent(uri string, runFunc RunFunc, data chan core.Message) (Agent, runti
 }
 
 // Run - run the agent
-func (a *agentCfg) Run(activity core.MessageHandler, ctrlHandler core.MessageHandler) {
+func (a *agentCfg) Run(activity core.MessageHandler, handlers ...core.MessageHandler) {
 	if activity == nil {
 		activity = func(msg core.Message) {}
 	}
-	if ctrlHandler == nil {
-		ctrlHandler = func(msg core.Message) {}
-	}
-	go a.runFunc(a.m, activity, ctrlHandler)
+	//if ctrlHandler == nil {
+	//	ctrlHandler = func(msg core.Message) {}
+	//}
+	go a.runFunc(a.m, activity, handlers...)
 }
 
 // Shutdown - shutdown the agent's mailbox
@@ -93,8 +93,12 @@ func (a *agentCfg) Register(dir Directory) runtime.Status {
 	return dir.Add(a.m)
 }
 
-// DefaultRun - a simple run function that only handles control messages, and dispatches via the message handler
-func DefaultRun(m *Mailbox, _ core.MessageHandler, ctrlHandler core.MessageHandler) {
+// DefaultRun - a simple run function that only handles control messages, and dispatches via a message handler
+func DefaultRun(m *Mailbox, _ core.MessageHandler, handlers ...core.MessageHandler) {
+	ctrlHandler := func(msg core.Message) {}
+	if len(handlers) > 0 {
+		ctrlHandler = handlers[0]
+	}
 	for {
 		select {
 		case msg, open := <-m.ctrl:
