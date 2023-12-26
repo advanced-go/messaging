@@ -70,10 +70,7 @@ func (d *directory) SendCtrl(msg core.Message) runtime.Status {
 	if !status.OK() {
 		return status.AddLocation(dirSendCtrlLocation)
 	}
-	if mbox.ctrl == nil {
-		return runtime.NewStatusError(runtime.StatusInvalidContent, dirSendCtrlLocation, errors.New(fmt.Sprintf("entry control channel is nil: [%v]", msg.To)))
-	}
-	mbox.ctrl <- msg
+	mbox.SendCtrl(msg)
 	return runtime.StatusOK()
 }
 
@@ -83,10 +80,7 @@ func (d *directory) SendData(msg core.Message) runtime.Status {
 	if !status.OK() {
 		return status.AddLocation(dirSendDataLocation)
 	}
-	if mbox.data == nil {
-		return runtime.NewStatusError(runtime.StatusInvalidContent, dirSendDataLocation, errors.New(fmt.Sprintf("entry data channel is nil: [%v]", msg.To)))
-	}
-	mbox.data <- msg
+	mbox.SendData(msg)
 	return runtime.StatusOK()
 }
 
@@ -103,7 +97,7 @@ func (d *directory) Add(m *Mailbox) runtime.Status {
 	}
 	_, ok := d.m.Load(m.uri)
 	if ok {
-		return runtime.NewStatusError(runtime.StatusInvalidArgument, dirAddLocation, errors.New(fmt.Sprintf("invalid argument: Directory mailbox already exists: [%v]", m.uri)))
+		return runtime.NewStatusError(runtime.StatusInvalidArgument, dirAddLocation, errors.New(fmt.Sprintf("invalid argument: directory mailbox already exists: [%v]", m.uri)))
 	}
 	d.m.Store(m.uri, m)
 	m.unregister = func() {
