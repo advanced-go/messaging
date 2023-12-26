@@ -19,14 +19,14 @@ func Example_NewDefaultAgent() {
 	agentDir := NewDirectory() //any(NewDirectory()).(*directory)
 	uri := "github.com/advanced-go/example-domain/activity"
 	//c := make(chan core.Message, 16)
-	a, status := NewDefaultAgent(uri, newAgentCtrlHandler)
+	a, status := NewDefaultAgent(uri, newAgentCtrlHandler, agentDir)
 	if !status.OK() {
 		fmt.Printf("test: NewDefaultAgent() -> [status:%v]\n", status)
 	}
-	status = a.Register(agentDir)
-	if !status.OK() {
-		fmt.Printf("test: Register() -> [status:%v]\n", status)
-	}
+	//status = a.Register(agentDir)
+	//if !status.OK() {
+	//	fmt.Printf("test: Register() -> [status:%v]\n", status)
+	//}
 	// 1 -10 Nanoseconds works for a direct send to a channel, sending via a directory needs a longer sleep time
 	//d := time.Nanosecond * 10
 	// Needed time.Nanoseconds * 50 for directory send with mutex
