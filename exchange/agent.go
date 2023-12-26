@@ -26,7 +26,11 @@ type agentCfg struct {
 
 // NewDefaultAgent - create an agent with only a control channel, registered with the HostDirectory,
 // and using the default run function.
-func NewDefaultAgent(uri string, ctrlHandler core.MessageHandler, privateDir Directory) (Agent, runtime.Status) {
+func NewDefaultAgent(uri string, ctrlHandler core.MessageHandler) (Agent, runtime.Status) {
+	return newDefaultAgent(uri, ctrlHandler, HostDirectory)
+}
+
+func newDefaultAgent(uri string, ctrlHandler core.MessageHandler, dir Directory) (Agent, runtime.Status) {
 	if len(uri) == 0 {
 		return nil, runtime.NewStatusError(runtime.StatusInvalidArgument, newAgentLocation, errors.New("URI is empty"))
 	}
@@ -38,10 +42,7 @@ func NewDefaultAgent(uri string, ctrlHandler core.MessageHandler, privateDir Dir
 	a.run = func(m *Mailbox) {
 		DefaultRun(m, ctrlHandler)
 	}
-	if privateDir == nil {
-		privateDir = HostDirectory
-	}
-	a.Register(privateDir)
+	a.Register(dir)
 	return a, runtime.StatusOK()
 }
 

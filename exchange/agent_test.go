@@ -19,7 +19,7 @@ func Example_NewDefaultAgent() {
 	agentDir := NewDirectory() //any(NewDirectory()).(*directory)
 	uri := "github.com/advanced-go/example-domain/activity"
 	//c := make(chan core.Message, 16)
-	a, status := NewDefaultAgent(uri, newAgentCtrlHandler, agentDir)
+	a, status := newDefaultAgent(uri, newAgentCtrlHandler, agentDir)
 	if !status.OK() {
 		fmt.Printf("test: NewDefaultAgent() -> [status:%v]\n", status)
 	}
