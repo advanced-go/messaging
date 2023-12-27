@@ -13,12 +13,15 @@ const (
 	startupLocation = PkgPath + ":Startup"
 )
 
+// ContentMap - slice of any content to be included in a message
+type ContentMap map[string][]any
+
 // Startup - templated function to start all registered resources.
-func Startup[E runtime.ErrorHandler](duration time.Duration, content core.Map) (status runtime.Status) {
+func Startup[E runtime.ErrorHandler](duration time.Duration, content ContentMap) (status runtime.Status) {
 	return startup[E](HostDirectory, duration, content)
 }
 
-func startup[E runtime.ErrorHandler](directory Directory, duration time.Duration, content core.Map) (status runtime.Status) {
+func startup[E runtime.ErrorHandler](directory Directory, duration time.Duration, content ContentMap) (status runtime.Status) {
 	var e E
 	var failures []string
 	var count = directory.Count()
@@ -51,7 +54,7 @@ func startup[E runtime.ErrorHandler](directory Directory, duration time.Duration
 	return e.Handle(runtime.NewStatusError(runtime.StatusDeadlineExceeded, startupLocation, errors.New(fmt.Sprintf("response counts < directory entries [%v] [%v]", cache.Count(), directory.Count()))), "", "")
 }
 
-func createToSend(directory Directory, cm core.Map, fn core.MessageHandler) core.MessageMap {
+func createToSend(directory Directory, cm ContentMap, fn core.MessageHandler) core.MessageMap {
 	m := make(core.MessageMap)
 	for _, k := range directory.List() {
 		msg := core.Message{To: k, From: startupLocation, Event: core.StartupEvent, Status: nil, ReplyTo: fn}

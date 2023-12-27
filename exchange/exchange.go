@@ -6,6 +6,7 @@ import (
 )
 
 const (
+	addLoc      = PkgPath + ":Add"
 	sendCtrlLoc = PkgPath + ":SendCtrl"
 	sendDataLoc = PkgPath + ":SendData"
 
@@ -34,10 +35,16 @@ func Register(m *Mailbox) runtime.Status {
 	//d.add(m)
 	return runtime.StatusOK()
 }
-
-
-
 */
+
+// Add - add a mailbox
+func Add(m *Mailbox) runtime.Status {
+	status := HostDirectory.Add(m)
+	if !status.OK() {
+		status.AddLocation(addLoc)
+	}
+	return status
+}
 
 // SendCtrl - send to command channel
 func SendCtrl(msg core.Message) runtime.Status {

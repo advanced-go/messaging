@@ -8,13 +8,47 @@ import (
 	"time"
 )
 
-var credFn core.Credentials = func() (string, string, error) {
+type credentials func() (username string, password string, err error)
+
+var credFn credentials = func() (string, string, error) {
 	return "", "", nil
 }
 
-func testRegister(dir *directory, uri string, cmd, data chan core.Message) error {
-	dir.Add(newMailbox(uri, false, cmd, data))
+// accessCredentials - access function for Credentials in a message
+func accessCredentials(msg *core.Message) credentials {
+	if msg == nil || msg.Content == nil {
+		return nil
+	}
+	for _, c := range msg.Content {
+		if fn, ok := c.(credentials); ok {
+			return fn
+		}
+	}
 	return nil
+}
+
+func accessResource(msg *core.Message) resource {
+	if msg == nil || msg.Content == nil {
+		return resource{}
+	}
+	for _, c := range msg.Content {
+		if url, ok := c.(resource); ok {
+			return url
+		}
+	}
+	return resource{}
+}
+
+// Resource - struct for a resource
+type resource struct {
+	Uri string
+}
+
+func testRegister(dir *directory, uri string, cmd, data chan core.Message) runtime.Status {
+	if cmd == nil {
+		cmd = make(chan core.Message, 16)
+	}
+	return dir.Add(newMailbox(uri, false, cmd, data))
 }
 
 var start time.Time
@@ -24,17 +58,22 @@ func ExampleCreateToSend() {
 	one := "startup/one"
 
 	startupDir := any(NewDirectory()).(*directory)
-	testRegister(startupDir, none, nil, nil)
-	testRegister(startupDir, one, nil, nil)
-
+	status := testRegister(startupDir, none, nil, nil)
+	if !status.OK() {
+		fmt.Printf("test: testRegister() -> [status:%v]\n", status)
+	}
+	status = testRegister(startupDir, one, nil, nil)
+	if !status.OK() {
+		fmt.Printf("test: testRegister() -> [status:%v]\n", status)
+	}
 	m := createToSend(startupDir, nil, nil)
 	msg := m[none]
 	fmt.Printf("test: createToSend(nil,nil) -> [to:%v] [from:%v]\n", msg.To, msg.From)
 
-	cm := core.Map{one: []any{credFn}}
+	cm := ContentMap{one: []any{credFn}}
 	m = createToSend(startupDir, cm, nil)
 	msg = m[one]
-	fmt.Printf("test: createToSend(map,nil) -> [to:%v] [from:%v] [credentials:%v]\n", msg.To, msg.From, core.AccessCredentials(&msg) != nil)
+	fmt.Printf("test: createToSend(map,nil) -> [to:%v] [from:%v] [credentials:%v]\n", msg.To, msg.From, accessCredentials(&msg) != nil)
 
 	//Output:
 	//test: createToSend(nil,nil) -> [to:startup/none] [from:github.com/advanced-go/messaging/exchange:Startup]
@@ -148,4 +187,41 @@ func startupDepends(c chan core.Message, err error) {
 		default:
 		}
 	}
+}
+
+var msgTest = core.Message{To: "to-uri", From: "from-uri", Content: []any{
+	"text content",
+	500,
+	credentials(func() (username, password string, err error) { return "", "", nil }),
+	time.Second,
+	nil,
+	//runtime.Handle[runtime.DebugError](),
+	errors.New("this is a content error message"),
+	func() bool { return false },
+	runtime.NewStatusError(0, "location", errors.New("error message")).SetDuration(time.Second * 2),
+	//runtime.HandleWithContext[runtime.DebugError](),
+	resource{"postgres://username:password@database.cloud.timescale.com/database?sslmode=require"},
+}}
+
+func ExampleAccessCredentials() {
+	fmt.Printf("test: AccessCredentials(nil) -> %v\n", accessCredentials(nil) != nil)
+	fmt.Printf("test: AccessCredentials(msg) -> %v\n", accessCredentials(&core.Message{To: "to-uri"}) != nil)
+	fmt.Printf("test: AccessCredentials(msg) -> %v\n", accessCredentials(&msgTest) != nil)
+
+	//Output:
+	//test: AccessCredentials(nil) -> false
+	//test: AccessCredentials(msg) -> false
+	//test: AccessCredentials(msg) -> true
+}
+
+func ExampleAccessResource() {
+	fmt.Printf("test: AccessResource(nil) -> %v\n", accessResource(nil))
+	fmt.Printf("test: AccessResource(msg) -> %v\n", accessResource(&core.Message{To: "to-uri"}))
+	fmt.Printf("test: AccessResource(msg) -> %v\n", accessResource(&msgTest))
+
+	//Output:
+	//test: AccessResource(nil) -> {}
+	//test: AccessResource(msg) -> {}
+	//test: AccessResource(msg) -> {postgres://username:password@database.cloud.timescale.com/database?sslmode=require}
+
 }
