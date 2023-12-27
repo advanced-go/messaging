@@ -16,12 +16,19 @@ type Mailbox struct {
 	unregister func()
 }
 
-// NewMailbox - create a new mailbox
+// NewMailbox - create a mailbox
 func NewMailbox(uri string, data chan core.Message) *Mailbox {
 	m := new(Mailbox)
 	m.uri = uri
 	m.ctrl = make(chan core.Message, 16)
 	m.data = data
+	return m
+}
+
+// NewPublicMailbox - create a public mailbox
+func NewPublicMailbox(uri string, data chan core.Message) *Mailbox {
+	m := NewMailbox(uri, data)
+	m.public = true
 	return m
 }
 
