@@ -2,7 +2,6 @@ package core
 
 import (
 	"errors"
-	"fmt"
 	"github.com/advanced-go/core/runtime"
 	"time"
 )
@@ -10,7 +9,7 @@ import (
 var msgTest = Message{To: "to-uri", From: "from-uri", Content: []any{
 	"text content",
 	500,
-	Credentials(func() (username, password string, err error) { return "", "", nil }),
+	//Credentials(func() (username, password string, err error) { return "", "", nil }),
 	time.Second,
 	nil,
 	//runtime.Handle[runtime.DebugError](),
@@ -18,9 +17,10 @@ var msgTest = Message{To: "to-uri", From: "from-uri", Content: []any{
 	func() bool { return false },
 	runtime.NewStatusError(0, "location", errors.New("error message")).SetDuration(time.Second * 2),
 	//runtime.HandleWithContext[runtime.DebugError](),
-	Resource{"postgres://username:password@database.cloud.timescale.com/database?sslmode=require"},
+	//Resource{"postgres://username:password@database.cloud.timescale.com/database?sslmode=require"},
 }}
 
+/*
 func ExampleAccessCredentials() {
 	fmt.Printf("test: AccessCredentials(nil) -> %v\n", AccessCredentials(nil) != nil)
 	fmt.Printf("test: AccessCredentials(msg) -> %v\n", AccessCredentials(&Message{To: "to-uri"}) != nil)
@@ -43,3 +43,6 @@ func ExampleAccessResource() {
 	//test: AccessResource(msg) -> {postgres://username:password@database.cloud.timescale.com/database?sslmode=require}
 
 }
+
+
+*/

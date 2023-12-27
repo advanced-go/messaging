@@ -3,6 +3,7 @@ package core
 // Map - slice of any content to be included in a message
 type Map map[string][]any
 
+/*
 // Credentials - type for a credentials function
 type Credentials func() (username string, password string, err error)
 
@@ -36,3 +37,6 @@ func AccessResource(msg *Message) Resource {
 	}
 	return Resource{}
 }
+
+
+*/
